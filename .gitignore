@@ -1,11 +1,11 @@
-# Keep working files off the public site
+# Keep working files off the public site (leading / = this folder only)
 .DS_Store
-xgassman-site/
-xgassman-site 2/
-xgassman-site.zip
-FAVICONS.txt
-notes.html
-cat-on-skateboard.png
-dice.png
-post-it-notes.png
-sound-waveform.png
+/xgassman-site/
+/xgassman-site 2/
+/xgassman-site.zip
+/FAVICONS.txt
+/notes.html
+/cat-on-skateboard.png
+/dice.png
+/post-it-notes.png
+/sound-waveform.png
