@@ -10,6 +10,7 @@ A small gallery of browser games and tools I've made, live at **[xgassman.com](h
 | Dice | `dice_simulator_2.html` | Dice roller with Classic, Vegas and Disco themes, locking dice and running totals. |
 | Spectrum Studio | `spectrum-studio_1.html` | Live audio visualizer for your mic, a browser tab or a demo track. |
 | Idea Board | `stickies.html` | Corkboard of sticky-note checklists, photos and links. Saves in your browser. |
+| Da Chicago Pope Hot Dog Dropper Game | `hotdog_drop.html` | Chicago street-food drop game. Inspired by the 1995 freeware Mac game [Slick Willie 2.0](https://www.macintoshrepository.org/6705-slick-willie-2-0) by Jim Byer. |
 
 Everything is plain HTML, CSS and JavaScript: no build step, no dependencies.
 
