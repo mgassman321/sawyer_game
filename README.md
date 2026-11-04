@@ -4,13 +4,30 @@ A small gallery of browser games and tools I've made, live at **[xgassman.com](h
 
 ## Projects
 
-| Project | File | What it is |
-|---|---|---|
-| Sawyer's Skateboarding Superpets | `soy_game_4.html` | Pixel-art skateboarding game: pick one of eight pets and jump down the school hallway. |
-| Dice | `dice_simulator_2.html` | Dice roller with Classic, Vegas and Disco themes, locking dice and running totals. |
-| Spectrum Studio | `spectrum-studio_1.html` | Live audio visualizer for your mic, a browser tab or a demo track. |
-| Idea Board | `stickies.html` | Corkboard of sticky-note checklists, photos and links. Saves in your browser. |
-| Da Chicago Pope Hot Dog Dropper Game | `hotdog_drop.html` | Chicago street-food drop game. Inspired by the 1995 freeware Mac game [Slick Willie 2.0](https://www.macintoshrepository.org/6705-slick-willie-2-0) by Jim Byer. |
+### Sawyer's Skateboarding Superpets
+`soy_game_4.html`
+
+Made for my daughter and her pets. Inspired by the Rotunda of Gateways in *Doctor Strange*: think Flappy Bird meets the endless hallways of Tom & Jerry and old Hanna-Barbera cartoons, then add a double jump. Version 2 will bring power-ups, difficulty settings, a difficulty curve that ramps up as you go, and high scores (pending Twin Galaxies approval).
+
+### Dice
+`dice_simulator_2.html`
+
+For when you don't have the right dice on hand for a board game, or anything else.
+
+### Spectrum Studio
+`spectrum-studio_1.html`
+
+Turn on your microphone and you've got a visualizer that moves with sound and music, with presets and plenty of ways to customize the look. Inspired by the Winamp visualization plugins of the late '90s and early 2000s. Winamp, it really whips the llama's ass!
+
+### Idea Board
+`stickies.html`
+
+My own take on Stickies, because I live in a world of Chrome tabs. Notes, photos and links save in your browser.
+
+### Da Chicago Pope Hot Dog Dropper Game
+`hotdog_drop.html`
+
+A Chicago street-food drop game. Inspired by the 1995 freeware Mac game [Slick Willie 2.0](https://www.macintoshrepository.org/6705-slick-willie-2-0) by Jim Byer.
 
 Everything is plain HTML, CSS and JavaScript: no build step, no dependencies.
 
