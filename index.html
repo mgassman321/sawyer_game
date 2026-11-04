@@ -45,14 +45,20 @@
     .detail { font-size: 11px; color: var(--quiet); }
 
     main { flex: 1; }
-    .intro { padding: 42px 0 20px; }
-    .eyebrow {
-      margin: 0 0 20px;
-      font-weight: 400;
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 56px;
+    }
+    .tagline {
+      margin: 0;
       font-size: 12px;
+      font-weight: 400;
       letter-spacing: 0.2px;
       color: var(--quiet);
     }
+    .slashes { color: var(--accent); margin-right: 2px; }
     h1 {
       margin: 0 0 18px;
       font-size: 40px;
@@ -150,13 +156,10 @@
   <div class="page">
     <header>
       <span class="brand">xgassman<span class="dot">.</span></span>
+      <h1 class="tagline"><span class="slashes" aria-hidden="true">//</span> Always making something.</h1>
     </header>
 
     <main>
-      <div class="intro">
-        <h1 class="eyebrow">Always making something.</h1>
-      </div>
-
       <!-- To add a project: copy one <li>, change the link, name and class,
            and add a matching color line in the "Tile colors" CSS block. -->
       <ul class="grid">
