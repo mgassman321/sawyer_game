@@ -52,7 +52,7 @@ Served by **GitHub Pages** from the `main` branch, root folder. The domain is re
 ## Updating the site
 
 ```
-cd ~/Documents/sawyer_game
+cd ~/Documents/xgassman
 git pull                     # always first: picks up changes made on github.com
 git add -A
 git commit -m "Describe the change"
