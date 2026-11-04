@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicons/superpets.png">
+<link rel="apple-touch-icon" href="favicons/superpets-touch.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sawyer's Skateboarding Superpets</title>
@@ -10,6 +12,14 @@
   :root {
     --wall: #e7c98a;
     --wall-dark: #caa866;
+    /* Cinder-block wall paint (3 shades for natural variation) + mortar */
+    --block:   #ecd7a8;
+    --block-2: #e8d19f;
+    --block-3: #efdcb1;
+    --mortar:  #c9b083;
+    /* Painted accent stripe — change these to the school's colors */
+    --stripe:   #2f5d8a;
+    --stripe-2: #e8b33a;
     --floor: #6b4a2b;
     --floor-light: #8a6339;
     --accent: #ffb347;
@@ -172,7 +182,9 @@
     box-shadow: 0 0 6px rgba(255,110,199,0.5);
   }
   #hud {
-    position: fixed; top: 14px; left: 14px;
+    position: fixed; top: 14px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
     font-family: 'Press Start 2P', ui-monospace, Menlo, monospace;
     font-size: 12px;
     background: rgba(0,0,0,0.5);
@@ -187,6 +199,7 @@
     display: flex;
     gap: 16px;
     align-items: baseline;
+    justify-content: center;
     white-space: nowrap;
   }
   #hud .scores .best {
@@ -242,7 +255,7 @@
       <span class="best"><span class="lbl">BEST</span>&nbsp;<span id="hudHighScore">0.0</span>&nbsp;m</span>
       <span class="current"><span id="hudDistance">0.0</span>&nbsp;m</span>
     </div>
-    <div class="hud-keys"><kbd>Space</kbd> jump &nbsp;·&nbsp; <kbd>R</kbd> restart &nbsp;·&nbsp; <kbd>Esc</kbd> menu</div>
+    <div class="hud-keys"><kbd>Space</kbd> jump &nbsp;·&nbsp; <kbd>P</kbd> pause &nbsp;·&nbsp; <kbd>R</kbd> restart &nbsp;·&nbsp; <kbd>Esc</kbd> menu</div>
   </div>
 
   <div id="overlay">
@@ -629,8 +642,10 @@
       input._queuedPress = true;
       input.jumpHeld = true;
       input.jumpBufferUntil = performance.now() + CFG.jumpBufferMs;
+    } else if (e.code === "KeyP") {
+      togglePause();
     } else if (e.code === "KeyR") {
-      if (state.mode === "playing" || state.mode === "dead") startGame(state.charId);
+      if (state.mode === "playing" || state.mode === "dead" || state.mode === "paused") startGame(state.charId);
     } else if (e.code === "Escape") {
       showMenu();
     }
@@ -649,7 +664,8 @@
   // Game state
   // =============================================================
   const state = {
-    mode: "loading",           // "loading" | "menu" | "playing" | "dead"
+    mode: "loading",           // "loading" | "menu" | "playing" | "paused" | "dead"
+    pausedAt: 0,
     charId: 0,
     distance: 0,
     highScore: loadHighScore(),
@@ -684,6 +700,7 @@
     state.distance = 0;
     state.newRecord = false;
     state.worldX = 0;
+    reseedHallway();   // new random door/prop layout every run
     state.scrollSpeed = CFG.scrollSpeed;
     state.player = makePlayer(charId);
     state.obstacles = [];
@@ -693,6 +710,53 @@
     renderHighScore(state.highScore);
     overlay.classList.add("hidden");
     hud.classList.remove("hidden");
+  }
+
+  // -------------------------------------------------------------
+  // Pause (P). Freezes everything; on resume, all time-based values are
+  // shifted forward by the paused duration so speed ramp / coyote time
+  // pick up exactly where they left off.
+  // -------------------------------------------------------------
+  function togglePause() {
+    const now = performance.now();
+    if (state.mode === "playing") {
+      state.mode = "paused";
+      state.pausedAt = now;
+    } else if (state.mode === "paused") {
+      const pausedFor = now - state.pausedAt;
+      state.startTime      += pausedFor;
+      state.lastGroundedAt += pausedFor;
+      // Drop any Space presses made while paused so you don't resume mid-jump.
+      input._queuedPress = false;
+      input.jumpBufferUntil = 0;
+      state.mode = "playing";
+    }
+  }
+  // Auto-pause if the player switches tabs/windows mid-run.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && state.mode === "playing") togglePause();
+  });
+  window.addEventListener("blur", () => {
+    if (state.mode === "playing") togglePause();
+  });
+
+  function drawPauseScreen() {
+    ctx.fillStyle = "rgba(20, 4, 40, 0.55)";
+    ctx.fillRect(0, 0, CFG.width, CFG.height);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "32px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#2a0040";
+    ctx.fillText("PAUSED", CFG.width / 2 + 3, CFG.height / 2 - 14 + 3);
+    const grad = ctx.createLinearGradient(CFG.width / 2 - 110, 0, CFG.width / 2 + 110, 0);
+    grad.addColorStop(0, "#ff6ec7"); grad.addColorStop(0.5, "#63e2ff"); grad.addColorStop(1, "#ffeb61");
+    ctx.fillStyle = grad;
+    ctx.fillText("PAUSED", CFG.width / 2, CFG.height / 2 - 14);
+    ctx.font = "11px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#e9cfff";
+    ctx.fillText("Press P to keep skating", CFG.width / 2, CFG.height / 2 + 30);
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
   }
 
   function showMenu() {
@@ -754,28 +818,144 @@
   // =============================================================
   // Background (parallax with sprite-based hallway props)
   // =============================================================
+  // Wall + ceiling scroll at the SAME parallax as the lockers/doors so the
+  // blocks stay "glued" to the furniture instead of sliding behind it.
+  const HALL_PARALLAX = 0.56;
+  const CEIL_H  = 84;    // drop-ceiling band (y 0–84)
+  const WALL_Y  = 92;    // wall starts below the ceiling trim
+  const BLOCK_W = 64, BLOCK_H = 32;   // cinder block incl. mortar joint
+  const STRIPE_Y = 178;  // painted accent stripe (school colors)
+
+  let _blockTile = null, _ceilTile = null;
+
+  // Pre-render one wide tile of painted cinder block (running bond). The tile
+  // is 8 blocks × 4 rows so the per-block shade variation doesn't look repetitive.
+  function buildBlockTile() {
+    const cols = 8, rows = 4;
+    const c = document.createElement("canvas");
+    c.width = BLOCK_W * cols; c.height = BLOCK_H * rows;
+    const g = c.getContext("2d");
+    const mortar = getCSS("--mortar");
+    const shades = ["--block", "--block-2", "--block-3"].map(getCSS);
+    g.fillStyle = mortar;
+    g.fillRect(0, 0, c.width, c.height);
+    for (let r = 0; r < rows; r++) {
+      const off = (r % 2) ? BLOCK_W / 2 : 0;
+      for (let i = -1; i <= cols; i++) {
+        const x = i * BLOCK_W + off + 2, y = r * BLOCK_H + 2;
+        const w = BLOCK_W - 4, h = BLOCK_H - 4;
+        const shade = shades[hashInt(r * 31 + ((i + cols) % cols)) % shades.length];
+        g.fillStyle = shade;
+        g.fillRect(x, y, w, h);
+        // Soft bevel: light top/left, dark bottom/right — reads as painted block.
+        g.fillStyle = "rgba(255,255,255,0.35)";
+        g.fillRect(x, y, w, 1);
+        g.fillRect(x, y, 1, h);
+        g.fillStyle = "rgba(90,60,20,0.18)";
+        g.fillRect(x, y + h - 1, w, 1);
+        g.fillRect(x + w - 1, y, 1, h);
+        // A few faint pores so it's not perfectly flat.
+        g.fillStyle = "rgba(120,90,40,0.10)";
+        for (let d = 0; d < 6; d++) {
+          const hsh = hashInt(r * 977 + i * 131 + d * 17);
+          g.fillRect(x + 3 + (hsh % (w - 6)), y + 3 + ((hsh >>> 8) % (h - 6)), 2, 1);
+        }
+      }
+    }
+    return c;
+  }
+
+  // Drop ceiling: acoustic tiles on a metal grid, with a fluorescent panel
+  // every 4th tile.
+  function buildCeilTile() {
+    const tileW = 120, n = 4;
+    const c = document.createElement("canvas");
+    c.width = tileW * n; c.height = CEIL_H;
+    const g = c.getContext("2d");
+    g.fillStyle = "#efe9db";
+    g.fillRect(0, 0, c.width, c.height);
+    // Speckle texture on the tiles.
+    g.fillStyle = "rgba(120,110,90,0.12)";
+    for (let s = 0; s < 260; s++) {
+      const h = hashInt(s * 7919);
+      g.fillRect(h % c.width, (h >>> 10) % CEIL_H, 1, 1);
+    }
+    // Grid (T-bar) lines.
+    g.fillStyle = "#cfc6b2";
+    for (let i = 0; i < n; i++) g.fillRect(i * tileW, 0, 3, CEIL_H);
+    g.fillRect(0, 40, c.width, 3);
+    // Fluorescent light panel in the first tile.
+    const lx = 14, lw = tileW - 25;
+    g.fillStyle = "#fffdf3";
+    g.fillRect(lx, 8, lw, 26);
+    g.fillStyle = "rgba(200,210,220,0.55)";
+    for (let k = 1; k < 4; k++) g.fillRect(lx, 8 + k * 6.5, lw, 1);
+    g.strokeStyle = "#d8d2c2"; g.lineWidth = 2;
+    g.strokeRect(lx, 8, lw, 26);
+    return c;
+  }
+
+  // Draw a pre-rendered tile repeated horizontally, scrolled by `scroll`.
+  function drawTiled(tile, scroll, y, h) {
+    const tw = tile.width;
+    let x = -(((scroll % tw) + tw) % tw);
+    for (; x < CFG.width; x += tw) {
+      ctx.drawImage(tile, 0, 0, tw, Math.min(h, tile.height), x, y, tw, Math.min(h, tile.height));
+    }
+  }
+
   function drawBackground(worldX) {
-    const W = CFG.width;
+    const W = CFG.width, G = CFG.groundY;
+    const scrolled = worldX * HALL_PARALLAX;
+    if (!_blockTile) _blockTile = buildBlockTile();
+    if (!_ceilTile)  _ceilTile  = buildCeilTile();
 
-    // Ceiling band
-    ctx.fillStyle = "#f4e6c6";
-    ctx.fillRect(0, 0, W, 90);
-    ctx.fillStyle = "#cbb184";
-    ctx.fillRect(0, 86, W, 6);
+    // --- Ceiling ---
+    drawTiled(_ceilTile, scrolled, 0, CEIL_H);
+    // Ceiling-to-wall trim (metal angle) + shadow line.
+    ctx.fillStyle = "#bfb39a";
+    ctx.fillRect(0, CEIL_H, W, 5);
+    ctx.fillStyle = "#8f8169";
+    ctx.fillRect(0, CEIL_H + 5, W, 3);
 
-    // Back wall
-    ctx.fillStyle = getCSS("--wall");
-    ctx.fillRect(0, 92, W, CFG.groundY - 92);
+    // --- Cinder-block wall ---
+    // Tile vertically so block rows line up from the top of the wall.
+    for (let y = WALL_Y; y < G; y += _blockTile.height) {
+      drawTiled(_blockTile, scrolled, y, Math.min(_blockTile.height, G - y));
+    }
 
-    // Baseboard + subtle repeating trim dashes (very slow parallax, -20% → 0.32)
-    const trimOffset = (worldX * 0.32) % 80;
-    ctx.fillStyle = getCSS("--wall-dark");
-    ctx.fillRect(0, 92, W, 4);
-    for (let x = -trimOffset; x < W; x += 80) ctx.fillRect(x, 120, 40, 2);
-    ctx.fillRect(0, CFG.groundY - 12, W, 4);
+    // Light falloff: brighter near the ceiling lights, a bit darker toward the floor.
+    const shadeGrad = ctx.createLinearGradient(0, WALL_Y, 0, G);
+    shadeGrad.addColorStop(0,    "rgba(255,250,235,0.18)");
+    shadeGrad.addColorStop(0.15, "rgba(0,0,0,0)");
+    shadeGrad.addColorStop(1,    "rgba(60,35,10,0.18)");
+    ctx.fillStyle = shadeGrad;
+    ctx.fillRect(0, WALL_Y, W, G - WALL_Y);
+    // Contact shadow right under the ceiling trim.
+    const topShadow = ctx.createLinearGradient(0, WALL_Y, 0, WALL_Y + 14);
+    topShadow.addColorStop(0, "rgba(60,40,15,0.30)");
+    topShadow.addColorStop(1, "rgba(60,40,15,0)");
+    ctx.fillStyle = topShadow;
+    ctx.fillRect(0, WALL_Y, W, 14);
 
-    // Mid-depth props (lockers / doors / fountain) at 0.56 parallax (-20% from 0.7)
-    drawHallProps(worldX * 0.56);
+    // --- Painted school-color stripe (sits on block rows, so it's painted on) ---
+    ctx.fillStyle = getCSS("--stripe");
+    ctx.fillRect(0, STRIPE_Y, W, 16);
+    ctx.fillStyle = getCSS("--stripe-2");
+    ctx.fillRect(0, STRIPE_Y + 19, W, 5);
+    // Let the mortar joints show faintly through the paint.
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    let jx = -(((scrolled % BLOCK_W) + BLOCK_W) % BLOCK_W) + BLOCK_W / 2;
+    for (; jx < W; jx += BLOCK_W) ctx.fillRect(jx, STRIPE_Y, 2, 16);
+
+    // --- Rubber cove baseboard ---
+    ctx.fillStyle = "#3d2f25";
+    ctx.fillRect(0, G - 14, W, 14);
+    ctx.fillStyle = "#5a4636";
+    ctx.fillRect(0, G - 14, W, 2);
+
+    // Mid-depth props (lockers / doors / fountain) at the same parallax as the wall.
+    drawHallProps(scrolled);
 
     // Floor on top
     drawFloor(worldX);
@@ -811,12 +991,22 @@
 
   // Per-type variant stream with guaranteed no-consecutive-repeats (across all
   // cycles). Lazily grows as the world scrolls forward; determined by type+k.
-  const _variantTables = Object.create(null);
+  //
+  // RUN_SEED makes the hallway truly random: a fresh seed is rolled every time a
+  // run starts (startGame → reseedHallway), so each game gets a different door /
+  // locker / prop order. Within a run the picks stay stable (no flicker), and the
+  // "never the same variant twice in a row" rule still holds.
+  let RUN_SEED = (Math.random() * 0x100000000) >>> 0;
+  let _variantTables = Object.create(null);
+  function reseedHallway() {
+    RUN_SEED = (Math.random() * 0x100000000) >>> 0;
+    _variantTables = Object.create(null);
+  }
   function getVariant(type, k, N) {
     if (N <= 1) return 0;
     let arr = _variantTables[type];
     if (!arr) { arr = []; _variantTables[type] = arr; }
-    const salt = stringSalt(type);
+    const salt = (stringSalt(type) ^ RUN_SEED) >>> 0;
     while (arr.length <= k) {
       const idx = arr.length;
       if (idx === 0) {
@@ -851,12 +1041,19 @@
   const DOOR_DOUBLE_SALT = stringSalt("door_double");
   const DOOR_BUDDY_SALT  = stringSalt("door_buddy");
 
-  function normK(k) { return k < 0 ? ((k % 1000003) + 1000003) : k; }
+  // Map an occurrence index k (which can be slightly negative, since the cycle
+  // just behind the screen is cycleIdx = -1) to a non-negative table index.
+  // A small constant shift keeps neighbours adjacent (so "no repeat next to
+  // each other" still holds across the cycle boundary) and avoids the old
+  // wrap-to-1,000,000 mapping, which built a million-entry table — a ~90 ms
+  // freeze — at the start of every run.
+  const K_SHIFT = 64;
+  function normK(k) { return k + K_SHIFT; }
 
   // 50/50 deterministic per (cycle, ordinal). Low bit of a hash.
   function isDoorDoubled(cycleIdx, ordinal) {
     const k = cycleIdx * DOOR_COUNT_PER_CYCLE + ordinal;
-    return (hashInt((DOOR_DOUBLE_SALT + normK(k)) | 0) & 1) === 1;
+    return (hashInt((DOOR_DOUBLE_SALT + RUN_SEED + normK(k)) | 0) & 1) === 1;
   }
 
   // Primary door variant for a given (cycle, ordinal) — matches what the main loop
@@ -877,7 +1074,7 @@
     const banned = primaryV === nextPrimaryV ? [primaryV] : (primaryV < nextPrimaryV ? [primaryV, nextPrimaryV] : [nextPrimaryV, primaryV]);
     const validCount = N - banned.length;
     const k = cycleIdx * DOOR_COUNT_PER_CYCLE + ordinal;
-    let r = hashInt((DOOR_BUDDY_SALT + normK(k)) | 0) % validCount;
+    let r = hashInt((DOOR_BUDDY_SALT + RUN_SEED + normK(k)) | 0) % validCount;
     // Shift r past each banned index ≤ r.
     for (let i = 0; i < banned.length; i++) {
       if (r >= banned[i]) r++;
@@ -1040,6 +1237,7 @@
   }
 
   function update(dt, now) {
+    if (state.mode === "paused") return;   // world frozen
     if (state.mode !== "playing") {
       state.worldX += 1.2 * (dt / 16.67);
       return;
@@ -1150,10 +1348,11 @@
     ctx.clearRect(0, 0, CFG.width, CFG.height);
     drawBackground(state.worldX);
 
-    if (state.mode === "playing" || state.mode === "dead") {
+    if (state.mode === "playing" || state.mode === "dead" || state.mode === "paused") {
       for (const o of state.obstacles) drawObstacle(o, state.worldX);
       drawPlayer(state.player);
       hudDistance.textContent = state.distance.toFixed(1);
+      if (state.mode === "paused") drawPauseScreen();
     } else if (state.mode === "menu") {
       const demo = {
         x: CFG.playerX, y: CFG.groundY - CFG.playerH, vy: 0, onGround: true,
@@ -1251,8 +1450,15 @@
   // =============================================================
   // Utilities
   // =============================================================
+  // Cached: reading computed styles every frame is surprisingly slow.
+  const _cssCache = Object.create(null);
   function getCSS(varName) {
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    let v = _cssCache[varName];
+    if (v === undefined) {
+      v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      _cssCache[varName] = v;
+    }
+    return v;
   }
   function shade(hex, pct) {
     const m = hex.replace("#", "").match(/.{2}/g).map(h => parseInt(h, 16));
