@@ -74,41 +74,65 @@
   #polish-banner span { font-size: 72px; font-weight: 900; font-style: italic; text-align: center; background: linear-gradient(90deg,#ff0,#0f0,#0ff,#f0f,#ff0,#0f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 8px lime); user-select: none; letter-spacing: 2px; }
   #furby-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1999; opacity: 0; background: radial-gradient(ellipse at center, rgba(0,255,255,0.08) 0%, transparent 70%); transition: opacity 0.3s; }
   #furby-overlay.active { opacity: 1; }
+  .ctrl-group label.expo-toggle { display: flex; margin-bottom: 0; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; user-select: none; }
+  .expo-toggle .expo-name { font-size: 11px; color: #f5c842; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.35; font-weight: bold; }
+  .expo-toggle input { display: none; }
+  .expo-toggle .sw { display: inline-block; flex: none; width: 40px; height: 22px; border-radius: 11px; background: #333; position: relative; transition: background 0.15s; }
+  .expo-toggle .sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 0.15s; }
+  .expo-toggle input:checked + .sw { background: #e3262e; }
+  .expo-toggle input:checked + .sw::after { left: 21px; }
+  #expo-status { font-size: 11px; color: #777; margin-top: 6px; min-height: 14px; }
+  #expo-status.on { color: #41b6e6; }
+  #expo-status.max { color: #e3262e; font-weight: bold; }
+  #gen-val.expo-bump { animation: pulse 0.25s ease 2 alternate; color: #f5c842; }
 </style>
 </head>
 <body>
 
-<div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a1a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;">
-  <div style="text-align:center;max-width:700px;padding:0 20px;">
-    <h1 style="font-size:clamp(32px,6vw,72px);font-weight:900;line-height:1.1;color:#fff;text-shadow:0 0 40px rgba(255,200,0,0.4);">
-      Da Chicago<br>
-      <span style="background:linear-gradient(90deg,#f5c842,#e8a020,#f5c842);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Pope Hot Dog</span><br>
-      Dropper Game
-    </h1>
-    <div style="margin-top:20px;font-size:14px;color:#555;line-height:1.8;">
-      Catch hot dogs, Italian beefs, and Maxwell Street polishes for points.<br>
-      Catch Mallört and space eggs for bonuses.<br>
-      Adjust the hot dog drop speed and more with the sliders on the right.
-    </div>
+<style>
+  #splash-screen {
+    background:
+      linear-gradient(to bottom,
+        transparent 0, transparent 9%,
+        rgba(65,182,230,0.9) 9%, rgba(65,182,230,0.9) 13%,
+        transparent 13%, transparent 87%,
+        rgba(65,182,230,0.9) 87%, rgba(65,182,230,0.9) 91%,
+        transparent 91%),
+      #0b1a2b;
+  }
+  #splash-screen .splash-stars { display: flex; gap: 18px; justify-content: center; margin-bottom: 26px; }
+  #splash-screen .splash-stars svg { width: 30px; height: 30px; }
+  #splash-screen .splash-stars polygon { fill: #e3262e; stroke: #e3262e; stroke-width: 3; stroke-linejoin: miter; }
+  #splash-title { font-size: clamp(32px,6vw,72px); font-weight: 900; line-height: 1.12; color: #fff; text-align: center; text-shadow: 0 0 36px rgba(65,182,230,0.45), 0 3px 0 rgba(0,0,0,0.35); }
+  #splash-title .t-mid { display: block; font-size: clamp(26px,4.6vw,64px); color: #41b6e6; }
+  #splash-title .t-da { display: inline-block; position: relative; }
+  #splash-title .t-d { display: inline-block; position: relative; }
+  #splash-title .mitre { position: absolute; left: 50%; bottom: 78%; width: 0.62em; height: 0.78em; transform: translateX(-50%) rotate(-12deg); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+  #splash-steps { display: inline-block; text-align: left; margin-top: 22px; font-size: 17px; line-height: 1.5; color: #eaf6fc; list-style: none; }
+  #splash-steps li { display: flex; align-items: baseline; gap: 12px; margin: 6px 0; }
+  #splash-steps .num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #e3262e; color: #fff; font-weight: 900; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; position: relative; top: -1px; }
+  #start-btn { background: #e3262e; color: #fff; border: 3px solid #fff; border-radius: 12px; padding: 18px 56px; font-size: 24px; font-weight: 900; letter-spacing: 0.08em; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 30px rgba(65,182,230,0.55); transition: transform 0.1s, box-shadow 0.1s; }
+  #start-btn:hover { transform: scale(1.06); box-shadow: 0 0 50px rgba(65,182,230,0.9); }
+  #splash-foot { font-size: 12px; color: #8fcbe6; position: absolute; bottom: 16px; }
+</style>
+<div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
+  <div class="splash-stars" aria-hidden="true">
+    <svg viewBox="0 0 100 100"><polygon points="50,2 94,77 6,77"/><polygon points="50,98 6,23 94,23"/></svg><svg viewBox="0 0 100 100"><polygon points="50,2 94,77 6,77"/><polygon points="50,98 6,23 94,23"/></svg><svg viewBox="0 0 100 100"><polygon points="50,2 94,77 6,77"/><polygon points="50,98 6,23 94,23"/></svg><svg viewBox="0 0 100 100"><polygon points="50,2 94,77 6,77"/><polygon points="50,98 6,23 94,23"/></svg>
   </div>
-  <button id="start-btn" onclick="startGame()" style="
-    background: linear-gradient(135deg, #e8a020, #d4a017);
-    color: #000;
-    border: none;
-    border-radius: 12px;
-    padding: 18px 56px;
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    box-shadow: 0 0 30px rgba(232,160,32,0.5);
-    transition: transform 0.1s, box-shadow 0.1s;
-  " onmouseover="this.style.transform='scale(1.06)';this.style.boxShadow='0 0 50px rgba(232,160,32,0.8)';"
-     onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 0 30px rgba(232,160,32,0.5)';">
-    ▶ START GAME
-  </button>
-  <div style="font-size:11px;color:#333;position:absolute;bottom:16px;">Catch food with the Pope's head. No ketchup.</div>
+  <div style="text-align:center;max-width:1200px;padding:0 20px;">
+    <h1 id="splash-title">
+      <span class="t-da"><span class="t-d">D<svg class="mitre" viewBox="0 0 60 76" aria-hidden="true"><path d="M30 2 C44 12 56 26 56 44 L56 74 L4 74 L4 44 C4 26 16 12 30 2 Z" fill="#fff" stroke="#c9a227" stroke-width="3"/><path d="M30 2 L30 74" stroke="#c9a227" stroke-width="7"/><path d="M4 62 L56 62" stroke="#c9a227" stroke-width="8"/><path d="M30 18 L30 40 M21 27 L39 27" stroke="#e3262e" stroke-width="5" stroke-linecap="round"/><path d="M30 2 C24 10 20 16 18 22" fill="none" stroke="#c9a227" stroke-width="2"/></svg></span>a</span>
+      <span class="t-mid">Chicago Pope Hot Dog Dropper</span>
+      Game
+    </h1>
+    <ol id="splash-steps">
+      <li><span class="num">1</span><span>Catch hot dogs, Italian beefs, and Maxwell Street polishes for points.</span></li>
+      <li><span class="num">2</span><span>Catch Mallört and space eggs for bonuses.</span></li>
+      <li><span class="num">3</span><span>Adjust the hot dog drop speed and more with the sliders on the right.</span></li>
+    </ol>
+  </div>
+  <button id="start-btn" onclick="startGame()">▶ START GAME 🌭</button>
+  <div id="splash-foot">Catch food with the Pope's head. No ketchup.</div>
 </div>
 
 <img id="pope-cursor" src="" style="width:81px;height:100px;" />
@@ -152,6 +176,10 @@
     <div class="range-labels"><span>1</span><span>50</span></div>
   </div>
   <div class="ctrl-group">
+    <label class="expo-toggle" for="expo-toggle"><span class="expo-name">🌭 Exponential Hot Dog Droppage</span><input type="checkbox" id="expo-toggle"><span class="sw"></span></label>
+    <div id="expo-status">Off</div>
+  </div>
+  <div class="ctrl-group">
     <label>Drop Speed</label>
     <div class="val">Speed <span id="drop-val">5</span></div>
     <input type="range" id="drop-speed" min="1" max="25" step="1" value="5">
@@ -166,11 +194,11 @@
   </div>
   <div class="ctrl-group">
     <label>🥚 Space Egg interval (sec)</label>
-    <input type="number" id="egg-interval" min="1" max="999" value="9" style="width:100%;background:#1a1a3a;border:0.5px solid #444;border-radius:6px;color:#0ff;font-size:20px;font-weight:bold;padding:4px 8px;text-align:center;outline:none;" />
+    <input type="number" id="egg-interval" min="1" max="999" value="45" style="width:100%;background:#1a1a3a;border:0.5px solid #444;border-radius:6px;color:#0ff;font-size:20px;font-weight:bold;padding:4px 8px;text-align:center;outline:none;" />
   </div>
   <div class="ctrl-group">
     <label>🍺 Mallört interval (sec)</label>
-    <input type="number" id="mallort-interval" min="1" max="999" value="15" style="width:100%;background:#1a1a3a;border:0.5px solid #444;border-radius:6px;color:#d4a017;font-size:20px;font-weight:bold;padding:4px 8px;text-align:center;outline:none;" />
+    <input type="number" id="mallort-interval" min="1" max="999" value="30" style="width:100%;background:#1a1a3a;border:0.5px solid #444;border-radius:6px;color:#d4a017;font-size:20px;font-weight:bold;padding:4px 8px;text-align:center;outline:none;" />
   </div>
 </div>
 
@@ -262,6 +290,9 @@ let lastMallortTime=0, lastEggTime=0;
 let furbyEnd=0, mallortTextAcc=0, furbyTextAcc=0;
 
 let speedMult=1.0, genPerSec=1, lastGenTime=0;
+// Exponential Hot Dog Droppage: generation rate doubles every 3 sec up to a cap
+const EXPO_DOUBLE_MS=3000, EXPO_MAX_RATE=128, MAX_ON_SCREEN=700;
+let expoOn=false, expoRate=1, expoLastDouble=0;
 let polishBannerAnimId=null;
 
 const DOG_W=50, DOG_H=20;
@@ -290,7 +321,16 @@ const MALLORT_TEXTS = ['Mallört TRIPLE BONUS!','3X POINTS!','MALLÖRT MADNESS!'
 const FURBY_TEXTS   = ['✨ SUPER FURBY POPE MODE ✨','FURBY ACTIVATED!','FURBY FURBY FURBY!','KEEL-KAH!','DOOT DOOT DOOT!'];
 
 // ── Controls ─────────────────────────────────────────────────
-genSlider.addEventListener('input',  ()=>{ genPerSec=+genSlider.value; genValEl.textContent=genPerSec; });
+genSlider.addEventListener('input',  ()=>{ genPerSec=+genSlider.value; if(expoOn) resetExpo(); else genValEl.textContent=genPerSec; });
+const expoToggle=document.getElementById('expo-toggle'), expoStatusEl=document.getElementById('expo-status');
+function resetExpo(){ expoRate=genPerSec; expoLastDouble=gameTime; updateExpoUI(); }
+function updateExpoUI(){
+  if(!expoOn){ expoStatusEl.className=''; expoStatusEl.textContent='Off'; genValEl.textContent=genPerSec; return; }
+  genValEl.textContent=expoRate;
+  if(expoRate>=EXPO_MAX_RATE){ expoStatusEl.className='max'; expoStatusEl.textContent='MAXIMUM DROPPAGE!'; }
+  else { expoStatusEl.className='on'; expoStatusEl.textContent='Doubling every 3 sec (max '+EXPO_MAX_RATE+'/sec)'; }
+}
+expoToggle.addEventListener('change', ()=>{ expoOn=expoToggle.checked; if(expoOn) resetExpo(); else updateExpoUI(); expoToggle.blur(); });
 dropSlider.addEventListener('input', ()=>{ speedMult=+dropSlider.value/5; dropValEl.textContent=dropSlider.value; });
 controls.addEventListener('mouseenter', ()=>{ overControls=true;  popeCur.style.display='none'; });
 controls.addEventListener('mouseleave', ()=>{ overControls=false; popeCur.style.display='block'; });
@@ -508,9 +548,19 @@ function update(ts, dt){
   if(furbyActive && ts>=furbyEnd) endFurbyMode();
   if(mallortBonus){ mallortTextAcc+=dt; while(mallortTextAcc>=300){ mallortTextAcc-=300; spawnFloatingText(false); } }
   if(furbyActive){ furbyTextAcc+=dt; while(furbyTextAcc>=280){ furbyTextAcc-=280; spawnFloatingText(true); } }
-  if(ts-lastGenTime>=1000/genPerSec){ spawn(); lastGenTime=ts; }
-  if(!mallort && ts-lastMallortTime>=(+document.getElementById('mallort-interval').value||15)*1000){ spawnMallort(ts); lastMallortTime=ts; }
-  if(!spaceEgg && ts-lastEggTime>=(+document.getElementById('egg-interval').value||9)*1000){ spawnSpaceEgg(ts); lastEggTime=ts; }
+  if(expoOn && expoRate<EXPO_MAX_RATE && ts-expoLastDouble>=EXPO_DOUBLE_MS){
+    expoRate=Math.min(expoRate*2, EXPO_MAX_RATE); expoLastDouble=ts; updateExpoUI();
+    genValEl.classList.remove('expo-bump'); void genValEl.offsetWidth; genValEl.classList.add('expo-bump');
+  }
+  const genGap=1000/(expoOn?expoRate:genPerSec);
+  if(ts-lastGenTime>=genGap){
+    // several items per frame when the rate is higher than the frame rate
+    const n=Math.min(Math.floor((ts-lastGenTime)/genGap), 10);
+    for(let k=0;k<n && dogs.length<MAX_ON_SCREEN;k++) spawn();
+    lastGenTime = (ts-lastGenTime>=genGap*11) ? ts : lastGenTime+n*genGap;
+  }
+  if(!mallort && ts-lastMallortTime>=(+document.getElementById('mallort-interval').value||30)*1000){ spawnMallort(ts); lastMallortTime=ts; }
+  if(!spaceEgg && ts-lastEggTime>=(+document.getElementById('egg-interval').value||45)*1000){ spawnSpaceEgg(ts); lastEggTime=ts; }
 
   const gravity=BASE_GRAVITY*speedMult;
 
