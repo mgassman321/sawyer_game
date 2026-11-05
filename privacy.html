@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TM08TEJRJE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TM08TEJRJE');
+</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Privacy · xgassman</title>
+  <meta name="description" content="How xgassman.com uses Google Analytics, and what stays on your own device.">
+  <link rel="icon" type="image/png" href="/favicons/xgassman.png">
+  <link rel="apple-touch-icon" href="/favicons/xgassman-touch.png">
+  <style>
+    :root {
+      --paper: #191a18;
+      --ink: #eeeeea;
+      --quiet: #a5aa9f;
+      --rule: #383d34;
+      --accent: #6f8259;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); }
+    body {
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 900px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 36px 48px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .brand {
+      font-size: 23px;
+      font-weight: 500;
+      letter-spacing: -1px;
+      color: inherit;
+      text-decoration: none;
+    }
+    .dot, .slashes { color: var(--accent); }
+    main { flex: 1; padding: 56px 0 48px; max-width: 60ch; }
+    h1 {
+      margin: 0 0 28px;
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -2px;
+    }
+    h2 {
+      margin: 32px 0 8px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--quiet);
+    }
+    p, li { font-size: 14px; line-height: 1.65; }
+    p { margin: 0 0 12px; }
+    ul { margin: 0 0 12px; padding-left: 18px; }
+    a { color: var(--ink); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+    a:hover { text-decoration-color: var(--accent); }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .updated { margin-top: 32px; font-size: 12px; color: var(--quiet); }
+    footer { text-align: center; font-size: 10px; color: var(--quiet); }
+    @media (max-width: 560px) {
+      .page { padding: 26px 22px; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <a class="brand" href="/">xgassman<span class="dot">.</span></a>
+    </header>
+
+    <main>
+      <h1>Privacy</h1>
+
+      <p>xgassman.com is a personal site. There are no accounts, no ads, and nothing to sign up for.</p>
+
+      <h2><span class="slashes" aria-hidden="true">//</span> Analytics</h2>
+      <p>This site uses Google Analytics to count visits and see which projects get played. Google Analytics uses cookies and collects information such as:</p>
+      <ul>
+        <li>which pages you visit and for how long</li>
+        <li>your approximate location (city or region), browser and device type</li>
+        <li>the site or search that sent you here</li>
+      </ul>
+      <p>I only look at this as totals and trends. It isn’t used to identify you, and it isn’t sold or used for advertising. Google’s own handling of this data is covered in <a href="https://policies.google.com/privacy" rel="noopener">Google’s Privacy Policy</a>.</p>
+      <p>To opt out, you can use an ad or tracker blocker, or Google’s <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Analytics opt-out browser add-on</a>.</p>
+
+      <h2><span class="slashes" aria-hidden="true">//</span> What stays on your device</h2>
+      <ul>
+        <li><strong>Idea Board</strong> saves your notes, photos and links in your own browser’s storage. They’re never sent to me or anyone else, and clearing your browser data removes them.</li>
+        <li><strong>Spectrum Studio</strong> only listens to your microphone or tab audio after you choose to turn it on. The sound is turned into visuals right in your browser and is never recorded or uploaded.</li>
+      </ul>
+
+      <h2><span class="slashes" aria-hidden="true">//</span> Hosting</h2>
+      <p>The site is hosted on GitHub Pages, which keeps standard web server logs (such as IP addresses) for security. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub Privacy Statement</a>.</p>
+
+      <p class="updated">Last updated November 5, 2026</p>
+    </main>
+
+    <footer><a href="/">← Back to the gallery</a></footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TM08TEJRJE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TM08TEJRJE');
+</script>
+<link rel="icon" type="image/png" href="favicons/superpets.png">
+<link rel="apple-touch-icon" href="favicons/superpets-touch.png">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sawyer’s Skateboarding Superpets · xgassman</title>
+<meta name="description" content="A pixel-art skateboarding game made for my daughter and her pets. Flappy Bird meets endless cartoon hallways, plus a double jump.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="xgassman">
+<meta property="og:title" content="Sawyer’s Skateboarding Superpets">
+<meta property="og:description" content="A pixel-art skateboarding game made for my daughter and her pets. Flappy Bird meets endless cartoon hallways, plus a double jump.">
+<meta property="og:url" content="https://xgassman.com/superpets">
+<meta property="og:image" content="https://xgassman.com/og/superpets.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  :root {
+    --wall: #e7c98a;
+    --wall-dark: #caa866;
+    /* Cinder-block wall paint (3 shades for natural variation) + mortar */
+    --block:   #ecd7a8;
+    --block-2: #e8d19f;
+    --block-3: #efdcb1;
+    --mortar:  #c9b083;
+    /* Painted accent stripe — change these to the school's colors */
+    --stripe:   #2f5d8a;
+    --stripe-2: #e8b33a;
+    --floor: #6b4a2b;
+    --floor-light: #8a6339;
+    --accent: #ffb347;
+    --lf-pink: #ff6ec7;
+    --lf-purple: #c864ff;
+    --lf-cyan: #63e2ff;
+    --lf-yellow: #ffeb61;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #111;
+    color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background: radial-gradient(ellipse at center, #2a0b3a 0%, #080018 100%);
+  }
+  canvas {
+    display: block;
+    background: #8fc6ee;
+    image-rendering: pixelated;
+    max-width: 100vw;
+    max-height: 100vh;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    border-radius: 6px;
+  }
+  #overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,110,199,0.28), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(109,123,255,0.28), transparent 70%),
+      linear-gradient(180deg, rgba(35,5,55,0.92), rgba(12,4,30,0.96));
+    backdrop-filter: blur(4px);
+    padding: 24px;
+    text-align: center;
+    overflow: auto;
+  }
+  #overlay.hidden { display: none; }
+
+  /* ---------- Sparkly Lisa-Frank-ish title ---------- */
+  .title-wrap {
+    position: relative;
+    display: inline-block;
+    padding: 10px 30px;
+    margin: 0 0 14px 0;
+  }
+  .title-text {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: clamp(16px, 3.2vw, 30px);
+    line-height: 1.4;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg,
+      #ff6ec7 0%, #c864ff 18%, #6d7bff 34%, #63e2ff 50%,
+      #67ff9d 66%, #ffeb61 80%, #ff8a61 92%, #ff6ec7 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter:
+      drop-shadow(0 2px 0 #2a0040)
+      drop-shadow(0 0 10px rgba(255,110,199,0.75))
+      drop-shadow(0 0 24px rgba(200,100,255,0.55));
+    animation: rainbowSlide 6s linear infinite;
+  }
+  @keyframes rainbowSlide {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  .sparkle {
+    position: absolute;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    font-size: 20px;
+    pointer-events: none;
+    text-shadow: 0 0 8px #fff, 0 0 16px #ff6ec7, 0 0 24px #c864ff;
+    animation: twinkle 1.8s ease-in-out infinite;
+  }
+  .sparkle.s1 { top: -4px;   left:  4%;   animation-delay: 0.0s; }
+  .sparkle.s2 { top: 18%;    right: -6px; animation-delay: 0.3s; }
+  .sparkle.s3 { bottom: 14%; left: -10px; animation-delay: 0.6s; }
+  .sparkle.s4 { bottom: -6px;right: 12%;  animation-delay: 0.9s; }
+  .sparkle.s5 { top: 38%;    left: 44%;   animation-delay: 1.1s; font-size: 14px; }
+  .sparkle.s6 { bottom: 28%; right: 32%;  animation-delay: 1.4s; font-size: 14px; }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.25; transform: scale(0.7) rotate(-12deg); }
+    50%     { opacity: 1;    transform: scale(1.35) rotate(18deg); }
+  }
+
+  #overlay p {
+    margin: 0 0 22px 0;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #ffd3ec;
+    text-shadow: 0 0 6px rgba(255,110,199,0.6);
+  }
+
+  /* ---------- Roster cards ---------- */
+  .roster {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    width: min(820px, 100%);
+  }
+  .pick {
+    background: #fff;
+    border: 3px solid #ff6ec7;
+    border-radius: 14px;
+    padding: 8px 8px 10px;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    box-shadow:
+      0 0 0 2px #c864ff inset,
+      0 8px 18px rgba(200,100,255,0.45),
+      0 0 24px rgba(255,110,199,0.25);
+  }
+  .pick:hover {
+    transform: translateY(-3px);
+    border-color: #63e2ff;
+    box-shadow:
+      0 0 0 2px #ffeb61 inset,
+      0 12px 22px rgba(99,226,255,0.55),
+      0 0 32px rgba(255,235,97,0.35);
+  }
+  .pick canvas { background: #fff; box-shadow: none; border-radius: 8px; display: block; }
+  .pick .name {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #7a1aa0;
+    text-shadow: 0 1px 0 #fff, 0 0 4px #ff6ec7;
+  }
+
+  .hint {
+    margin-top: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #d4b8ff;
+  }
+  kbd {
+    background: linear-gradient(180deg, #ff6ec7, #c864ff);
+    border: 1px solid #fff;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 0 6px rgba(255,110,199,0.5);
+  }
+  #hud {
+    position: fixed; top: 14px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-family: 'Press Start 2P', ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+    pointer-events: none;
+    border: 2px solid #ff6ec7;
+    box-shadow: 0 0 18px rgba(200,100,255,0.4);
+  }
+  #hud.hidden { display: none; }
+  #hud .scores {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    justify-content: center;
+    white-space: nowrap;
+  }
+  #hud .scores .best {
+    font-size: 11px;
+    color: #63e2ff;
+    text-shadow: 0 0 6px rgba(99,226,255,0.75);
+  }
+  #hud .scores .best .lbl {
+    color: #ff6ec7;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  #hud .scores .current {
+    font-size: 14px;
+    color: #ffeb61;
+    text-shadow: 0 0 6px #ff6ec7;
+  }
+  #hud .hud-keys {
+    opacity: .7;
+    font-size: 10px;
+    margin-top: 4px;
+    color: #e9cfff;
+    font-family: ui-monospace, Menlo, monospace;
+    letter-spacing: 0.5px;
+  }
+  .loadbar {
+    width: min(420px, 80%);
+    height: 12px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid #ff6ec7;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 14px;
+    box-shadow: 0 0 12px rgba(255,110,199,0.5);
+  }
+  .loadbar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6ec7, #c864ff, #63e2ff, #67ff9d, #ffeb61, #ff6ec7);
+    background-size: 200% 100%;
+    width: 0%;
+    transition: width .2s ease;
+    animation: rainbowSlide 2s linear infinite;
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" width="960" height="540"></canvas>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div class="scores">
+      <span class="best"><span class="lbl">BEST</span>&nbsp;<span id="hudHighScore">0.0</span>&nbsp;m</span>
+      <span class="current"><span id="hudDistance">0.0</span>&nbsp;m</span>
+    </div>
+    <div class="hud-keys"><kbd>Space</kbd> jump &nbsp;·&nbsp; <kbd>P</kbd> pause &nbsp;·&nbsp; <kbd>R</kbd> restart &nbsp;·&nbsp; <kbd>Esc</kbd> menu</div>
+  </div>
+
+  <div id="overlay">
+    <div class="title-wrap">
+      <div class="title-text">SAWYER'S<br>SKATEBOARDING<br>SUPERPETS</div>
+      <span class="sparkle s1">&#10022;</span>
+      <span class="sparkle s2">&#10023;</span>
+      <span class="sparkle s3">&#10024;</span>
+      <span class="sparkle s4">&#10022;</span>
+      <span class="sparkle s5">&#10023;</span>
+      <span class="sparkle s6">&#10024;</span>
+    </div>
+    <p>Loading art…</p>
+    <div class="loadbar"><div id="loadfill"></div></div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  // =============================================================
+  // Config — tweak to dial in feel
+  // =============================================================
+  const CFG = {
+    width: 960,
+    height: 540,
+
+    // World
+    groundY: 460,
+    scrollSpeed: 6,
+    maxScrollSpeed: 10,
+    scrollAccel: 0.00025,
+
+    // Player
+    playerX: 220,
+    playerW: 44,
+    playerH: 64,
+    gravity: 0.85,
+    jumpV: -15.5,
+    doubleJumpV: -13.0,
+    jumpCutMultiplier: 0.45,
+    coyoteMs: 90,
+    jumpBufferMs: 120,
+    maxFallSpeed: 20,
+
+    // Obstacles
+    obstaclesEnabled: true,
+    obstacleMinGap: 320,
+    obstacleMaxGap: 640,
+  };
+
+  // =============================================================
+  // Canvas / DOM
+  // =============================================================
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+
+  const overlay = document.getElementById("overlay");
+  const hud = document.getElementById("hud");
+  const hudDistance = document.getElementById("hudDistance");
+  const hudHighScore = document.getElementById("hudHighScore");
+  const loadfill = document.getElementById("loadfill");
+
+  // -------------------------------------------------------------
+  // High-score persistence (localStorage with graceful fallback)
+  // -------------------------------------------------------------
+  const HS_KEY = "sawyerSkateSuperpets.highScore";
+  function loadHighScore() {
+    try {
+      const v = window.localStorage && window.localStorage.getItem(HS_KEY);
+      const n = v == null ? 0 : parseFloat(v);
+      return Number.isFinite(n) ? n : 0;
+    } catch (_) { return 0; }
+  }
+  function saveHighScore(n) {
+    try { window.localStorage && window.localStorage.setItem(HS_KEY, String(n)); }
+    catch (_) { /* localStorage blocked (e.g., file:// in some browsers) */ }
+  }
+  function renderHighScore(n) {
+    if (hudHighScore) hudHighScore.textContent = n.toFixed(1);
+  }
+
+  // =============================================================
+  // Asset manifest
+  //   Relative paths → the HTML lives alongside the PNGs.
+  // =============================================================
+  const MANIFEST = {
+    // Doors: door_1, door_2, and door_4 through door_54 (door_3 intentionally excluded).
+    // Total = 53 variants. With ~5 primary + ~2.5 buddy doors per cycle (50% double-door
+    // rate, see drawHallProps), variant repetition is rare even at fast scroll speeds.
+    doors:         (() => {
+      const arr = ["door_1.png", "door_2.png"];
+      for (let i = 4; i <= 54; i++) arr.push("door_" + i + ".png");
+      return arr;
+    })(),
+    // Lockers: lockers_3.png back in rotation alongside lockers_3_v2; lockers_2.png removed.
+    lockers:       [
+      "lockers_1.png", "lockers_3.png", "lockers_3_v2.png", "lockers_4.png",
+      "lockers_5.png", "lockers_6.png", "lockers_7.png",
+    ],
+    fountain:      ["water_fountain.png"],
+    plants:        ["plant.png"],
+    trophy_cases:  ["trophy_case.png"],
+    eagles:        ["eagle_mascot.png"],
+    vendings:      ["vending_1.png", "vending_2.png"],
+    garbage:       ["garbage.png"],
+    posters:       ["poster.png"],
+    banners:       ["banner_1.png", "banner_2.png"],
+    clocks:        ["clock.png"],
+    announces:     ["announce_1.png", "announce_2.png", "announce_3.png"],
+    class_signs:   ["class_1.png", "class_2.png", "class_3.png"],
+    extinguishers: ["extinguisher.png"],
+    fire_alarms:   ["fire_alarm.png"],
+    exit_signs:    ["exit_sign.png", "exit_sign_2.png"],
+    vents:         ["vent.png"],
+    murals:        ["mural.png"],
+    obstacle_sign:     ["obstacle_sign.png"],
+    obstacle_books:    ["obstacle_books.png"],
+    obstacle_backpack: ["obstacle_backpack.png"],
+    obstacle_sports:   ["obstacle_sports.png"],
+    characters_sitting: [
+      "ziggy_sitting.png",
+      "skippy_sitting.png",
+      "daisy_sitting.png",
+      "manny_sitting.png",
+      "spud_sitting.png",
+      "pretzel_sitting.png",
+      "snails_sitting.png",
+      "fish_sitting.png",
+    ],
+    // Order MUST match the skater order in CHARACTERS (index-aligned).
+    characters_board: [
+      "ziggy_board_2.png",
+      "skippy_board_2.png",
+      "daisy_board_2.png",
+      "manny_board_2.png",
+      "spud_board_2.png",
+      "pretzel_board_2.png",
+      "snail_board_2.png",    // note: singular, matches the file name the user created
+      "fish_board_2.png",
+    ],
+  };
+
+  // Tight bounding boxes (alpha-trimmed) for images that have transparent padding.
+  // Lockers are full-bleed so we skip cropping for them.
+  const SRC_BOX = {
+    door:        { sx: 260, sy: 35,  sw: 715,  sh: 1185 },
+    fountain:    { sx: 216, sy: 102, sw: 749,  sh: 889  },
+    plant:       { sx: 237, sy: 72,  sw: 535,  sh: 1374 },
+    trophy_case: { sx: 111, sy: 75,  sw: 1186, sh: 979  },
+    eagle:       { sx: 133, sy: 58,  sw: 873,  sh: 1166 },
+    vending:     { sx: 100, sy: 40,  sw: 1000, sh: 1250 }, // union bbox (covers both variants)
+    garbage:     { sx: 289, sy: 125, sw: 673,  sh: 965   },
+    poster:      { sx: 63,  sy: 25,  sw: 999,  sh: 1337  },
+    banner:      { sx: 62,  sy: 69,  sw: 1647, sh: 703   }, // union bbox (covers both variants)
+    clock:       { sx: 86,  sy: 66,  sw: 1082, sh: 1104  },
+    // New wall decor — cropped from large (1254×1254 / 1402×1122) source canvases.
+    extinguisher:{ sx: 355, sy: 55,  sw: 527,  sh: 1091  },
+    fire_alarm:  { sx: 262, sy: 187, sw: 738,  sh: 876   },
+    exit_sign:   { sx: 101, sy: 155, sw: 1200, sh: 733   }, // union crop covers both variants
+    vent:        { sx: 112, sy: 217, sw: 1039, sh: 813   },
+    // Mural: full content crop (aspect 1.357) — trims only the PNG's whitespace margin
+    // so the whole painting is visible. Width at render time is controlled by displayH.
+    mural:       { sx: 16,  sy: 57,  sw: 1371, sh: 1010  },
+    obstacle_sign:     { sx: 281, sy: 120, sw: 646,  sh: 1001 },
+    obstacle_books:    { sx: 185, sy: 156, sw: 878,  sh: 951  },
+    obstacle_backpack: { sx: 297, sy: 55,  sw: 707,  sh: 1036 },
+    obstacle_sports:   { sx: 87,  sy: 270, sw: 1276, sh: 614  },
+    // Unified crop for all 8 board sprites — they share a 1402×1122 canvas with
+    // content bottom pinned at y=1026 and content spanning x=77–1296.
+    board:       { sx: 77,  sy: 130, sw: 1219, sh: 896   },
+  };
+
+  // Display sizes + how each prop anchors vertically.
+  //   bucket        = which images[] array to pull from
+  //   src           = tight source-crop box (or null = use full image)
+  //   displayH      = rendered height in canvas pixels
+  //   groundOffset  = pixels of gap between prop bottom and floor (floor-anchored)
+  //   wallY         = top-Y of prop in pixels (wall-mounted; overrides groundOffset)
+  const PROP_DEFS = {
+    // Floor-anchored hallway furniture
+    door:         { bucket: "doors",        src: SRC_BOX.door,        displayH: 260, groundOffset: 0  },
+    lockers:      { bucket: "lockers",      src: null,                displayH: 240, groundOffset: 0  },
+    fountain:     { bucket: "fountain",     src: SRC_BOX.fountain,    displayH: 130, groundOffset: 16 },
+    plant:        { bucket: "plants",       src: SRC_BOX.plant,       displayH: 220, groundOffset: 0  },
+    trophy_case:  { bucket: "trophy_cases", src: SRC_BOX.trophy_case, displayH: 200, groundOffset: 30 },
+    eagle_mascot: { bucket: "eagles",       src: SRC_BOX.eagle,       displayH: 240, groundOffset: 0  },
+    vending:      { bucket: "vendings",     src: SRC_BOX.vending,     displayH: 220, groundOffset: 0  },
+    garbage:      { bucket: "garbage",      src: SRC_BOX.garbage,     displayH: 90,  groundOffset: 0  },
+
+    // Wall-mounted decor (rendered in the wall band above lockers).
+    // Wall band runs roughly y=96 to y=220 (top of lockers at displayH 240 is 460-240=220).
+    // Poster: lowered (wallY 102 → 220) so it hangs below the wall band — only placed in
+    // door-locker gaps so it never sits on a locker.
+    poster:       { bucket: "posters",      src: SRC_BOX.poster,      displayH: 110, wallY: 220 },
+    // Banner: doubled in size (64 → 128); wallY lowered to keep it vertically centered in the wall band.
+    banner:       { bucket: "banners",      src: SRC_BOX.banner,      displayH: 128, wallY: 86  },
+    // Clock: shrunk 25% (86 → 65); wallY adjusted to keep visual center at y≈153.
+    clock:        { bucket: "clocks",       src: SRC_BOX.clock,       displayH: 65,  wallY: 120 },
+    // Pre-cropped small signs (already trimmed tight to their canvases).
+    // Announce: +50% (87 → 130). Top at door-top (y=200), bottom y=330 (mid-door).
+    announce:     { bucket: "announces",    src: null,                displayH: 130, wallY: 200 },
+    // Class pictures: -30% (119 → 83). wallY 200 → top aligns with door top (y=200),
+    // bottom at y=283 (similar vertical anchoring to announce boards).
+    class_sign:   { bucket: "class_signs",  src: null,                displayH: 83,  wallY: 200 },
+    // Cropped from larger canvases.
+    // Extinguisher hangs vertically, centered around mid-door (y=330). displayH 80 → top at 290.
+    extinguisher: { bucket: "extinguishers",src: SRC_BOX.extinguisher,displayH: 80,  wallY: 290 },
+    // Fire alarm: ~25% of prior size (90 → 23), centered at mid-door (y=330) → top at ~319.
+    fire_alarm:   { bucket: "fire_alarms",  src: SRC_BOX.fire_alarm,  displayH: 23,  wallY: 319 },
+    // Exit sign: smaller; only appears hung directly above a doorframe (see PROPS below).
+    exit_sign:    { bucket: "exit_signs",   src: SRC_BOX.exit_sign,   displayH: 45,  wallY: 150 },
+    // Vent: shrunk 25% (74 → 56); wallY adjusted to keep visual center at y≈149.
+    vent:         { bucket: "vents",        src: SRC_BOX.vent,        displayH: 56,  wallY: 121 },
+    // Mural: shown whole (aspect 1.357 after trimming PNG whitespace). displayH 100,
+    // wallY 200 → y=200-300. Width at render = 100*1.357 ≈ 136. The cycle got tighter
+    // after reserving 157px buddy-door slots at each of the 5 doors, so the mural was
+    // shrunk from displayH 213 to 100 to fit in the remaining 80w gap (1880–1960)
+    // between locker@1280 and garbage@1960. The mural PROPS entry is at the START of
+    // the PROPS array so it renders BEHIND floor items — garbage in that gap sits IN
+    // FRONT of the mural, like a wall painting behind hallway furniture.
+    mural:        { bucket: "murals",       src: SRC_BOX.mural,       displayH: 100, wallY: 200 },
+  };
+
+  // Deterministic hallway prop cycle (Tom & Jerry–style seamless loop).
+  // Variant is chosen per-instance so the hallway has a repeating footprint
+  // but slightly varied art between loops.
+  const PROP_CYCLE = 6400;
+  const PROPS = [
+    // --- Background layer (rendered FIRST so all floor / wall items draw on top) ---
+    // Mural shrunk (displayH 213 → 100, width 289 → 136) and moved from 1770 → 1880
+    // to fit in the new 1880–1960 gap (between shifted locker@1280 and garbage@1960).
+    // Garbage@1960 is the only item allowed to render in front of the mural.
+    { at: 1880, type: "mural"        },
+    // --- Floor line ---
+    // The cycle was re-spaced so every door has a clean 157px-wide "buddy slot" at
+    // door+157 for the 50%-chance double-door feature (see drawHallProps). Items
+    // previously in those slots were pushed right (garbage/plant/lockers/eagle) or
+    // relocated (plant@5700→6200 filler at cycle end; locker@6020 removed).
+    { at: 0,    type: "lockers"      },
+    { at: 605,  type: "fountain"     },
+    // Each door's "first item after" sits ≥25w past the buddy's right edge so a
+    // doubled pair has a 25px trailing gap (same 25px breathing room as between
+    // the two doors). In the single-door case these gaps are larger because the
+    // buddy's 157w slot is empty — that's the trade-off for keeping static
+    // positions.
+    { at: 720,  type: "door"         },   // buddy slot 902–1059 (offset 182)
+    { at: 1084, type: "garbage"      },   // buddy@720 ends 1059, +25w trailing gap
+    { at: 1180, type: "plant"        },   // shifted from 1000
+    { at: 1280, type: "lockers"      },   // shifted from 1150 (ends 1880 = mural start)
+    { at: 1960, type: "garbage"      },
+    { at: 2080, type: "door"         },   // buddy slot 2262–2419
+    { at: 2444, type: "lockers"      },   // buddy@2080 ends 2419, +25w trailing gap
+    { at: 3050, type: "vending"      },   // locker@2444 ends 3044, +6w clearance
+    { at: 3260, type: "trophy_case"  },
+    { at: 3560, type: "door"         },   // buddy slot 3742–3899
+    { at: 3924, type: "lockers"      },   // buddy@3560 ends 3899, +25w trailing gap
+    { at: 4530, type: "eagle_mascot" },   // locker@3924 ends 4524, +6w clearance
+    { at: 4720, type: "garbage"      },
+    { at: 4820, type: "door"         },   // buddy slot 5002–5159
+    { at: 5184, type: "lockers"      },   // buddy@4820 ends 5159, +25w trailing gap
+    { at: 5820, type: "door"         },   // buddy slot 6002–6159
+    { at: 6184, type: "plant"        },   // buddy@5820 ends 6159, +25w trailing gap
+    // locker@6020 REMOVED — replaced by plant@6200. Locker@6160 would have wrapped
+    // 360w into the next cycle's locker@0; plant@6200 (86w) leaves a clean gap.
+    // --- Wall line (rendered on the wall above lockers) ---
+    { at: 180,  type: "banner"       },
+    { at: 520,  type: "clock"        },
+    { at: 2550, type: "banner"       },
+    { at: 2900, type: "clock"        },
+    { at: 4180, type: "banner"       },
+    { at: 5640, type: "clock"        },
+    { at: 1700, type: "vent"         },
+    { at: 3900, type: "vent"         },
+    { at: 5820, type: "vent"         },
+    // Fire alarms (at mid-door height):
+    //   1100 → wall above garbage/plant gap (y separates cleanly from floor items)
+    //   4400 → wall above locker (y separates cleanly)
+    { at: 1100, type: "fire_alarm"   },
+    { at: 4400, type: "fire_alarm"   },
+    // Extinguishers. The first one moved from 2960 → 3210 → 2040 as the cycle was
+    // re-spaced; 2040 sits in the empty-floor gap between garbage@1960 and door@2080
+    // (2023–2080, 57w), where wall y 290–370 has no conflict with the short garbage
+    // floor-band (y 370–460) or the adjacent mural/poster/door.
+    // 3717 stays put but is suppressed whenever door@3560 is doubled (see below).
+    { at: 2040, type: "extinguisher" },   // moved from 3210
+    { at: 3717, type: "extinguisher", suppressByDoubleAt: 3560 },
+    // Exit sign, centered over door@3560 (door width 157, exit sign width ~74).
+    { at: 3602, type: "exit_sign"    },
+    // Posters. poster@2237 stays (suppressed when door@2080 is doubled). poster@5600
+    // moved to 6286 (end-of-cycle gap 6286–6400, 114w, fits poster 82w) because the
+    // new locker@5160-5760 covered the old 5600 spot.
+    { at: 2237, type: "poster", suppressByDoubleAt: 2080 },
+    { at: 6286, type: "poster"       },   // moved from 5600
+    // Class pictures. class_sign@877 kept but suppressed when door@720 is doubled
+    // (buddy door at 877 would overlap). class_sign@4620 REMOVED — the new eagle
+    // position (4520) overlaps it, and no other 152w gap avoids tall floor items.
+    { at: 877,  type: "class_sign", suppressByDoubleAt: 720 },
+  ];
+
+  // =============================================================
+  // Images
+  // =============================================================
+  const images = {};
+  for (const key of Object.keys(MANIFEST)) images[key] = [];
+  let assetsLoaded = false;
+
+  // All MANIFEST PNGs live in the images/ subfolder. Keeping them out of the
+  // top level makes the project folder easier to browse.
+  const ASSET_DIR = "images/";
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => { console.warn("Failed to load", src); resolve(null); };
+      img.src = ASSET_DIR + src;
+    });
+  }
+
+  async function loadAllAssets() {
+    const all = [];
+    const registry = [];
+    for (const key of Object.keys(MANIFEST)) {
+      for (const src of MANIFEST[key]) {
+        const p = loadImage(src);
+        all.push(p);
+        registry.push({ key, p });
+      }
+    }
+    let done = 0;
+    for (const p of all) {
+      p.then(() => {
+        done++;
+        loadfill.style.width = `${(done / all.length) * 100}%`;
+      });
+    }
+    const loaded = await Promise.all(all);
+    // Pivot results back into images[*] arrays, preserving MANIFEST order.
+    let idx = 0;
+    for (const key of Object.keys(MANIFEST)) {
+      for (let i = 0; i < MANIFEST[key].length; i++) {
+        images[key].push(loaded[idx++]);
+      }
+    }
+    assetsLoaded = true;
+  }
+
+  // =============================================================
+  // Characters (placeholders)
+  // =============================================================
+  // Each character has:
+  //   imgIdx = index into images.characters_sitting
+  //   bbox   = tight non-white content box inside that image (for fit-cropping)
+  //   The color palette is retained for the in-game stick-figure placeholder
+  //   until skating art is provided.
+  // imgIdx      = index into images.characters_sitting (card portrait)
+  // boardImgIdx = index into images.characters_board   (in-game skateboard sprite)
+  // bbox        = tight non-white/alpha content box inside the sitting image (for fit-contain)
+  // portraitAlign = "bottom" (default) or "center" — how to vertically anchor short characters
+  const CHARACTERS = [
+    { id: 0, name: "Ziggy",      imgIdx: 0, boardImgIdx: 0, bbox: [224,  93, 1004, 1043] },
+    { id: 1, name: "Skippy",     imgIdx: 1, boardImgIdx: 1, bbox: [318, 190,  950, 1053] },
+    { id: 2, name: "Daisy",      imgIdx: 2, boardImgIdx: 2, bbox: [412, 199,  990,  932] },
+    { id: 3, name: "Manny",      imgIdx: 3, boardImgIdx: 3, bbox: [203,  69, 1048, 1053] },
+    { id: 4, name: "Spud",       imgIdx: 4, boardImgIdx: 4, bbox: [283, 158,  955, 1059] },
+    { id: 5, name: "Pretzel",    imgIdx: 5, boardImgIdx: 5, bbox: [276, 352, 1125,  837], portraitAlign: "center" },
+    { id: 6, name: "The Snails", imgIdx: 6, boardImgIdx: 6, bbox: [158, 394, 1224,  763], portraitAlign: "center" },
+    { id: 7, name: "The Fish",   imgIdx: 7, boardImgIdx: 7, bbox: [257, 385, 1112,  766], portraitAlign: "center" },
+  ];
+
+  // =============================================================
+  // Input
+  // =============================================================
+  const input = {
+    jumpHeld: false,
+    jumpBufferUntil: 0,
+    _queuedPress: false,
+  };
+  window.addEventListener("keydown", (e) => {
+    if (e.repeat) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      input._queuedPress = true;
+      input.jumpHeld = true;
+      input.jumpBufferUntil = performance.now() + CFG.jumpBufferMs;
+    } else if (e.code === "KeyP") {
+      togglePause();
+    } else if (e.code === "KeyR") {
+      if (state.mode === "playing" || state.mode === "dead" || state.mode === "paused") startGame(state.charId);
+    } else if (e.code === "Escape") {
+      showMenu();
+    }
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space") {
+      input.jumpHeld = false;
+      const p = state.player;
+      if (state.mode === "playing" && p && p.vy < 0) {
+        p.vy *= CFG.jumpCutMultiplier;
+      }
+    }
+  });
+
+  // =============================================================
+  // Game state
+  // =============================================================
+  const state = {
+    mode: "loading",           // "loading" | "menu" | "playing" | "paused" | "dead"
+    pausedAt: 0,
+    charId: 0,
+    distance: 0,
+    highScore: loadHighScore(),
+    newRecord: false,          // set true on death if this run beat the previous best
+    scrollSpeed: CFG.scrollSpeed,
+    worldX: 0,
+    player: null,
+    obstacles: [],
+    nextObstacleAt: 800,
+    startTime: 0,
+    lastGroundedAt: 0,
+    deathTime: 0,
+  };
+  renderHighScore(state.highScore);
+
+  function makePlayer(charId) {
+    return {
+      x: CFG.playerX,
+      y: CFG.groundY - CFG.playerH,
+      vy: 0,
+      onGround: true,
+      jumpsUsed: 0,
+      char: CHARACTERS[charId],
+      boardSpinPhase: 0,
+      bob: 0,
+    };
+  }
+
+  function startGame(charId) {
+    state.mode = "playing";
+    state.charId = charId;
+    state.distance = 0;
+    state.newRecord = false;
+    state.worldX = 0;
+    reseedHallway();   // new random door/prop layout every run
+    state.scrollSpeed = CFG.scrollSpeed;
+    state.player = makePlayer(charId);
+    state.obstacles = [];
+    state.nextObstacleAt = 800;
+    state.startTime = performance.now();
+    state.lastGroundedAt = performance.now();
+    renderHighScore(state.highScore);
+    overlay.classList.add("hidden");
+    hud.classList.remove("hidden");
+  }
+
+  // -------------------------------------------------------------
+  // Pause (P). Freezes everything; on resume, all time-based values are
+  // shifted forward by the paused duration so speed ramp / coyote time
+  // pick up exactly where they left off.
+  // -------------------------------------------------------------
+  function togglePause() {
+    const now = performance.now();
+    if (state.mode === "playing") {
+      state.mode = "paused";
+      state.pausedAt = now;
+    } else if (state.mode === "paused") {
+      const pausedFor = now - state.pausedAt;
+      state.startTime      += pausedFor;
+      state.lastGroundedAt += pausedFor;
+      // Drop any Space presses made while paused so you don't resume mid-jump.
+      input._queuedPress = false;
+      input.jumpBufferUntil = 0;
+      state.mode = "playing";
+    }
+  }
+  // Auto-pause if the player switches tabs/windows mid-run.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && state.mode === "playing") togglePause();
+  });
+  window.addEventListener("blur", () => {
+    if (state.mode === "playing") togglePause();
+  });
+
+  function drawPauseScreen() {
+    ctx.fillStyle = "rgba(20, 4, 40, 0.55)";
+    ctx.fillRect(0, 0, CFG.width, CFG.height);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "32px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#2a0040";
+    ctx.fillText("PAUSED", CFG.width / 2 + 3, CFG.height / 2 - 14 + 3);
+    const grad = ctx.createLinearGradient(CFG.width / 2 - 110, 0, CFG.width / 2 + 110, 0);
+    grad.addColorStop(0, "#ff6ec7"); grad.addColorStop(0.5, "#63e2ff"); grad.addColorStop(1, "#ffeb61");
+    ctx.fillStyle = grad;
+    ctx.fillText("PAUSED", CFG.width / 2, CFG.height / 2 - 14);
+    ctx.font = "11px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#e9cfff";
+    ctx.fillText("Press P to keep skating", CFG.width / 2, CFG.height / 2 + 30);
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
+  }
+
+  function showMenu() {
+    state.mode = "menu";
+    buildRosterScreen();
+  }
+
+  // =============================================================
+  // Obstacles (sprite-based: tall "sign" or low "books")
+  // =============================================================
+  // Display size drives collision size, so tuning the look also tunes the jump.
+  // yOffset: shifts the VISUAL sprite down this many pixels so the object
+  //          visually "sits" on the floor. Collision stays where it is, so the
+  //          top 7px of the collision box is effectively invisible above the
+  //          drawn sprite — same trick as the skater's wheel nudge.
+  const OBSTACLE_YOFFSET = 7;
+  // Each variant keeps its own collision (w, h). Tall ones block a tall jump;
+  // low/wide ones require a quick hop. Display sizes follow each sprite's
+  // natural aspect ratio so the art doesn't squish.
+  const OBSTACLE_DEFS = {
+    sign:     { bucket: "obstacle_sign",     src: SRC_BOX.obstacle_sign,     h: 104, w: 68 },
+    backpack: { bucket: "obstacle_backpack", src: SRC_BOX.obstacle_backpack, h: 104, w: 71 },
+    books:    { bucket: "obstacle_books",    src: SRC_BOX.obstacle_books,    h: 50,  w: 54 },
+    sports:   { bucket: "obstacle_sports",   src: SRC_BOX.obstacle_sports,   h: 44,  w: 92 },
+  };
+  // Category pools preserve the original 42% tall / 58% short difficulty mix.
+  // A tall spawn picks uniformly from TALL_OBSTACLES; a low spawn picks from SHORT_OBSTACLES.
+  const TALL_OBSTACLES  = ["sign", "backpack"];
+  const SHORT_OBSTACLES = ["books", "sports"];
+
+  function spawnObstacle() {
+    const tall = Math.random() < 0.42;
+    const pool = tall ? TALL_OBSTACLES : SHORT_OBSTACLES;
+    const type = pool[Math.floor(Math.random() * pool.length)];
+    const def = OBSTACLE_DEFS[type];
+    state.obstacles.push({
+      x: state.worldX + CFG.width + 40,
+      w: def.w, h: def.h,
+      type,
+    });
+    state.nextObstacleAt = state.worldX + CFG.width + 40 +
+      (CFG.obstacleMinGap + Math.random() * (CFG.obstacleMaxGap - CFG.obstacleMinGap));
+  }
+
+  function drawObstacle(o, worldX) {
+    const sx = o.x - worldX;
+    const sy = CFG.groundY - o.h + OBSTACLE_YOFFSET; // visual-only nudge
+    const def = OBSTACLE_DEFS[o.type];
+    const bucket = def && images[def.bucket];
+    const img = bucket && bucket[0];
+    if (img) {
+      ctx.drawImage(img, def.src.sx, def.src.sy, def.src.sw, def.src.sh, sx, sy, o.w, o.h);
+    } else {
+      ctx.fillStyle = "#c864ff";
+      ctx.fillRect(sx, sy, o.w, o.h);
+    }
+  }
+
+  // =============================================================
+  // Background (parallax with sprite-based hallway props)
+  // =============================================================
+  // Wall + ceiling scroll at the SAME parallax as the lockers/doors so the
+  // blocks stay "glued" to the furniture instead of sliding behind it.
+  const HALL_PARALLAX = 0.56;
+  const CEIL_H  = 84;    // drop-ceiling band (y 0–84)
+  const WALL_Y  = 92;    // wall starts below the ceiling trim
+  const BLOCK_W = 64, BLOCK_H = 32;   // cinder block incl. mortar joint
+  const STRIPE_Y = 178;  // painted accent stripe (school colors)
+
+  let _blockTile = null, _ceilTile = null;
+
+  // Pre-render one wide tile of painted cinder block (running bond). The tile
+  // is 8 blocks × 4 rows so the per-block shade variation doesn't look repetitive.
+  function buildBlockTile() {
+    const cols = 8, rows = 4;
+    const c = document.createElement("canvas");
+    c.width = BLOCK_W * cols; c.height = BLOCK_H * rows;
+    const g = c.getContext("2d");
+    const mortar = getCSS("--mortar");
+    const shades = ["--block", "--block-2", "--block-3"].map(getCSS);
+    g.fillStyle = mortar;
+    g.fillRect(0, 0, c.width, c.height);
+    for (let r = 0; r < rows; r++) {
+      const off = (r % 2) ? BLOCK_W / 2 : 0;
+      for (let i = -1; i <= cols; i++) {
+        const x = i * BLOCK_W + off + 2, y = r * BLOCK_H + 2;
+        const w = BLOCK_W - 4, h = BLOCK_H - 4;
+        const shade = shades[hashInt(r * 31 + ((i + cols) % cols)) % shades.length];
+        g.fillStyle = shade;
+        g.fillRect(x, y, w, h);
+        // Soft bevel: light top/left, dark bottom/right — reads as painted block.
+        g.fillStyle = "rgba(255,255,255,0.35)";
+        g.fillRect(x, y, w, 1);
+        g.fillRect(x, y, 1, h);
+        g.fillStyle = "rgba(90,60,20,0.18)";
+        g.fillRect(x, y + h - 1, w, 1);
+        g.fillRect(x + w - 1, y, 1, h);
+        // A few faint pores so it's not perfectly flat.
+        g.fillStyle = "rgba(120,90,40,0.10)";
+        for (let d = 0; d < 6; d++) {
+          const hsh = hashInt(r * 977 + i * 131 + d * 17);
+          g.fillRect(x + 3 + (hsh % (w - 6)), y + 3 + ((hsh >>> 8) % (h - 6)), 2, 1);
+        }
+      }
+    }
+    return c;
+  }
+
+  // Drop ceiling: acoustic tiles on a metal grid, with a fluorescent panel
+  // every 4th tile.
+  function buildCeilTile() {
+    const tileW = 120, n = 4;
+    const c = document.createElement("canvas");
+    c.width = tileW * n; c.height = CEIL_H;
+    const g = c.getContext("2d");
+    g.fillStyle = "#efe9db";
+    g.fillRect(0, 0, c.width, c.height);
+    // Speckle texture on the tiles.
+    g.fillStyle = "rgba(120,110,90,0.12)";
+    for (let s = 0; s < 260; s++) {
+      const h = hashInt(s * 7919);
+      g.fillRect(h % c.width, (h >>> 10) % CEIL_H, 1, 1);
+    }
+    // Grid (T-bar) lines.
+    g.fillStyle = "#cfc6b2";
+    for (let i = 0; i < n; i++) g.fillRect(i * tileW, 0, 3, CEIL_H);
+    g.fillRect(0, 40, c.width, 3);
+    // Fluorescent light panel in the first tile.
+    const lx = 14, lw = tileW - 25;
+    g.fillStyle = "#fffdf3";
+    g.fillRect(lx, 8, lw, 26);
+    g.fillStyle = "rgba(200,210,220,0.55)";
+    for (let k = 1; k < 4; k++) g.fillRect(lx, 8 + k * 6.5, lw, 1);
+    g.strokeStyle = "#d8d2c2"; g.lineWidth = 2;
+    g.strokeRect(lx, 8, lw, 26);
+    return c;
+  }
+
+  // Draw a pre-rendered tile repeated horizontally, scrolled by `scroll`.
+  function drawTiled(tile, scroll, y, h) {
+    const tw = tile.width;
+    let x = -(((scroll % tw) + tw) % tw);
+    for (; x < CFG.width; x += tw) {
+      ctx.drawImage(tile, 0, 0, tw, Math.min(h, tile.height), x, y, tw, Math.min(h, tile.height));
+    }
+  }
+
+  function drawBackground(worldX) {
+    const W = CFG.width, G = CFG.groundY;
+    const scrolled = worldX * HALL_PARALLAX;
+    if (!_blockTile) _blockTile = buildBlockTile();
+    if (!_ceilTile)  _ceilTile  = buildCeilTile();
+
+    // --- Ceiling ---
+    drawTiled(_ceilTile, scrolled, 0, CEIL_H);
+    // Ceiling-to-wall trim (metal angle) + shadow line.
+    ctx.fillStyle = "#bfb39a";
+    ctx.fillRect(0, CEIL_H, W, 5);
+    ctx.fillStyle = "#8f8169";
+    ctx.fillRect(0, CEIL_H + 5, W, 3);
+
+    // --- Cinder-block wall ---
+    // Tile vertically so block rows line up from the top of the wall.
+    for (let y = WALL_Y; y < G; y += _blockTile.height) {
+      drawTiled(_blockTile, scrolled, y, Math.min(_blockTile.height, G - y));
+    }
+
+    // Light falloff: brighter near the ceiling lights, a bit darker toward the floor.
+    const shadeGrad = ctx.createLinearGradient(0, WALL_Y, 0, G);
+    shadeGrad.addColorStop(0,    "rgba(255,250,235,0.18)");
+    shadeGrad.addColorStop(0.15, "rgba(0,0,0,0)");
+    shadeGrad.addColorStop(1,    "rgba(60,35,10,0.18)");
+    ctx.fillStyle = shadeGrad;
+    ctx.fillRect(0, WALL_Y, W, G - WALL_Y);
+    // Contact shadow right under the ceiling trim.
+    const topShadow = ctx.createLinearGradient(0, WALL_Y, 0, WALL_Y + 14);
+    topShadow.addColorStop(0, "rgba(60,40,15,0.30)");
+    topShadow.addColorStop(1, "rgba(60,40,15,0)");
+    ctx.fillStyle = topShadow;
+    ctx.fillRect(0, WALL_Y, W, 14);
+
+    // --- Painted school-color stripe (sits on block rows, so it's painted on) ---
+    ctx.fillStyle = getCSS("--stripe");
+    ctx.fillRect(0, STRIPE_Y, W, 16);
+    ctx.fillStyle = getCSS("--stripe-2");
+    ctx.fillRect(0, STRIPE_Y + 19, W, 5);
+    // Let the mortar joints show faintly through the paint.
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    let jx = -(((scrolled % BLOCK_W) + BLOCK_W) % BLOCK_W) + BLOCK_W / 2;
+    for (; jx < W; jx += BLOCK_W) ctx.fillRect(jx, STRIPE_Y, 2, 16);
+
+    // --- Rubber cove baseboard ---
+    ctx.fillStyle = "#3d2f25";
+    ctx.fillRect(0, G - 14, W, 14);
+    ctx.fillStyle = "#5a4636";
+    ctx.fillRect(0, G - 14, W, 2);
+
+    // Mid-depth props (lockers / doors / fountain) at the same parallax as the wall.
+    drawHallProps(scrolled);
+
+    // Floor on top
+    drawFloor(worldX);
+  }
+
+  // Per-type ordinal (position of each PROPS entry among others of its own type
+  // within a single cycle). Computed once so draw-time can derive the global
+  // occurrence index = cycleIdx * countPerCycle + typeOrdinal.
+  const PROP_TYPE_ORDINAL = [];
+  const PROP_COUNT_PER_CYCLE = {};
+  (() => {
+    const running = {};
+    for (const p of PROPS) {
+      running[p.type] = (running[p.type] || 0);
+      PROP_TYPE_ORDINAL.push(running[p.type]);
+      running[p.type]++;
+    }
+    Object.assign(PROP_COUNT_PER_CYCLE, running);
+  })();
+
+  // 32-bit int hash (xxhash-style scramble) for deterministic "random" picks.
+  function hashInt(x) {
+    x = ((x + 0x9e3779b9) | 0) >>> 0;
+    x = Math.imul(x ^ (x >>> 16), 0x85ebca6b) >>> 0;
+    x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35) >>> 0;
+    return (x ^ (x >>> 16)) >>> 0;
+  }
+  function stringSalt(s) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+    return h >>> 0;
+  }
+
+  // Per-type variant stream with guaranteed no-consecutive-repeats (across all
+  // cycles). Lazily grows as the world scrolls forward; determined by type+k.
+  //
+  // RUN_SEED makes the hallway truly random: a fresh seed is rolled every time a
+  // run starts (startGame → reseedHallway), so each game gets a different door /
+  // locker / prop order. Within a run the picks stay stable (no flicker), and the
+  // "never the same variant twice in a row" rule still holds.
+  let RUN_SEED = (Math.random() * 0x100000000) >>> 0;
+  let _variantTables = Object.create(null);
+  function reseedHallway() {
+    RUN_SEED = (Math.random() * 0x100000000) >>> 0;
+    _variantTables = Object.create(null);
+  }
+  function getVariant(type, k, N) {
+    if (N <= 1) return 0;
+    let arr = _variantTables[type];
+    if (!arr) { arr = []; _variantTables[type] = arr; }
+    const salt = (stringSalt(type) ^ RUN_SEED) >>> 0;
+    while (arr.length <= k) {
+      const idx = arr.length;
+      if (idx === 0) {
+        arr.push(hashInt(salt) % N);
+      } else {
+        const prev = arr[idx - 1];
+        // Pick r ∈ [0, N-2] deterministically, then remap to skip `prev`.
+        const r = hashInt((Math.imul(salt, 1000003) + idx) | 0) % (N - 1);
+        arr.push(r >= prev ? r + 1 : r);
+      }
+    }
+    return arr[k];
+  }
+
+  // =============================================================
+  // Door doubling (50% chance of a "buddy" door rendered directly after a door).
+  // Deterministic from (cycleIdx, doorOrdinal) so the same spot always renders
+  // the same way. Buddy slot is at door.at + DOOR_BUDDY_OFFSET.
+  // =============================================================
+  // Rendered door width ≈ 260 * 715/1185 ≈ 156.96 + 25px visual gap between the two
+  // doors of a doubled pair, so they read as two separate doorways rather than one.
+  const DOOR_BUDDY_OFFSET = 182;
+
+  // Map each door's PROPS-index at-position → its door ordinal (0..DOOR_COUNT_PER_CYCLE-1).
+  const DOOR_AT_TO_ORDINAL = (() => {
+    const m = Object.create(null);
+    let ord = 0;
+    for (const p of PROPS) if (p.type === "door") m[p.at] = ord++;
+    return m;
+  })();
+  const DOOR_COUNT_PER_CYCLE = PROP_COUNT_PER_CYCLE["door"] || 1;
+  const DOOR_DOUBLE_SALT = stringSalt("door_double");
+  const DOOR_BUDDY_SALT  = stringSalt("door_buddy");
+
+  // Map an occurrence index k (which can be slightly negative, since the cycle
+  // just behind the screen is cycleIdx = -1) to a non-negative table index.
+  // A small constant shift keeps neighbours adjacent (so "no repeat next to
+  // each other" still holds across the cycle boundary) and avoids the old
+  // wrap-to-1,000,000 mapping, which built a million-entry table — a ~90 ms
+  // freeze — at the start of every run.
+  const K_SHIFT = 64;
+  function normK(k) { return k + K_SHIFT; }
+
+  // 50/50 deterministic per (cycle, ordinal). Low bit of a hash.
+  function isDoorDoubled(cycleIdx, ordinal) {
+    const k = cycleIdx * DOOR_COUNT_PER_CYCLE + ordinal;
+    return (hashInt((DOOR_DOUBLE_SALT + RUN_SEED + normK(k)) | 0) & 1) === 1;
+  }
+
+  // Primary door variant for a given (cycle, ordinal) — matches what the main loop
+  // would draw via getVariant("door", k, N).
+  function primaryDoorVariant(cycleIdx, ordinal, N) {
+    const k = cycleIdx * DOOR_COUNT_PER_CYCLE + ordinal;
+    return getVariant("door", normK(k), N);
+  }
+
+  // Pick a buddy variant ≠ primary AND ≠ the next primary (which is what the eye
+  // lands on if the buddy is the rightmost door before the next one). Guarantees
+  // "doors never repeat right after each other" for both primary↔buddy (same pair)
+  // and buddy↔next-primary (adjacent pair going right).
+  function pickBuddyVariant(cycleIdx, ordinal, primaryV, nextPrimaryV, N) {
+    if (N <= 1) return 0;
+    if (N === 2) return (primaryV + 1) % N; // best we can do with 2
+    // Build sorted banned list (deduped).
+    const banned = primaryV === nextPrimaryV ? [primaryV] : (primaryV < nextPrimaryV ? [primaryV, nextPrimaryV] : [nextPrimaryV, primaryV]);
+    const validCount = N - banned.length;
+    const k = cycleIdx * DOOR_COUNT_PER_CYCLE + ordinal;
+    let r = hashInt((DOOR_BUDDY_SALT + RUN_SEED + normK(k)) | 0) % validCount;
+    // Shift r past each banned index ≤ r.
+    for (let i = 0; i < banned.length; i++) {
+      if (r >= banned[i]) r++;
+    }
+    return r;
+  }
+
+  function drawHallProps(scrolled) {
+    if (!assetsLoaded) return;
+    const baseCycle = Math.floor(scrolled / PROP_CYCLE);
+    const doorDef = PROP_DEFS["door"];
+    const doorBucket = doorDef ? images[doorDef.bucket] : null;
+    const N_doors = (doorBucket && doorBucket.length) || 1;
+    for (let c = -1; c <= 2; c++) {
+      const cycleIdx = baseCycle + c;
+      const cycleStart = cycleIdx * PROP_CYCLE - scrolled;
+      if (cycleStart > CFG.width || cycleStart + PROP_CYCLE < 0) continue;
+      for (let i = 0; i < PROPS.length; i++) {
+        const p = PROPS[i];
+
+        // Suppress wall items whose buddy-door would otherwise overlap them.
+        if (p.suppressByDoubleAt !== undefined) {
+          const doorOrd = DOOR_AT_TO_ORDINAL[p.suppressByDoubleAt];
+          if (doorOrd !== undefined && isDoorDoubled(cycleIdx, doorOrd)) continue;
+        }
+
+        const screenX = cycleStart + p.at;
+        if (screenX > -800 && screenX < CFG.width + 400) {
+          const def = PROP_DEFS[p.type];
+          const bucket = def && images[def.bucket];
+          const N = bucket ? bucket.length : 1;
+          const perCycle = PROP_COUNT_PER_CYCLE[p.type] || 1;
+          const k = cycleIdx * perCycle + PROP_TYPE_ORDINAL[i];
+          const kNorm = normK(k);
+          const variantIdx = getVariant(p.type, kNorm, N);
+          drawProp(p.type, screenX, variantIdx);
+
+          // Door doubling: 50% chance to render a buddy door at +157 with a
+          // non-repeating variant.
+          if (p.type === "door") {
+            const doorOrd = DOOR_AT_TO_ORDINAL[p.at];
+            if (doorOrd !== undefined && isDoorDoubled(cycleIdx, doorOrd)) {
+              const nextOrd = doorOrd + 1;
+              let nextPrimaryV;
+              if (nextOrd < DOOR_COUNT_PER_CYCLE) {
+                nextPrimaryV = primaryDoorVariant(cycleIdx, nextOrd, N_doors);
+              } else {
+                // Wrap: next primary is door ordinal 0 of next cycle.
+                nextPrimaryV = primaryDoorVariant(cycleIdx + 1, 0, N_doors);
+              }
+              const buddyV = pickBuddyVariant(cycleIdx, doorOrd, variantIdx, nextPrimaryV, N_doors);
+              drawProp("door", screenX + DOOR_BUDDY_OFFSET, buddyV);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function drawProp(type, x, variantIdx) {
+    const def = PROP_DEFS[type];
+    if (!def) return;
+    const bucket = images[def.bucket];
+    if (!bucket || bucket.length === 0) return;
+    const img = bucket[variantIdx % bucket.length];
+    if (!img) return;
+    const dh = def.displayH;
+    const dy = (def.wallY !== undefined)
+      ? def.wallY
+      : CFG.groundY - dh - (def.groundOffset || 0);
+    if (def.src) {
+      const dw = dh * (def.src.sw / def.src.sh);
+      ctx.drawImage(img, def.src.sx, def.src.sy, def.src.sw, def.src.sh, x, dy, dw, dh);
+    } else {
+      const dw = dh * (img.naturalWidth / img.naturalHeight);
+      ctx.drawImage(img, x, dy, dw, dh);
+    }
+  }
+
+  function drawFloor(worldX) {
+    const g = CFG.groundY;
+    ctx.fillStyle = getCSS("--floor");
+    ctx.fillRect(0, g, CFG.width, CFG.height - g);
+    ctx.fillStyle = getCSS("--floor-light");
+    ctx.fillRect(0, g, CFG.width, 4);
+    const tileW = 80;
+    const off = worldX % tileW;
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    for (let x = -off; x < CFG.width; x += tileW) ctx.fillRect(x, g + 8, 2, CFG.height - g - 8);
+    ctx.fillStyle = "rgba(255,255,255,0.04)";
+    ctx.fillRect(0, g + 14, CFG.width, 2);
+  }
+
+  // =============================================================
+  // Player (board sprite)
+  // =============================================================
+  // The sprite is visually larger than the collision box — the skateboard extends
+  // past the rider on each side. Collision stays tight to the rider's torso so
+  // gameplay feel is unchanged from the placeholder.
+  // yOffset: pushes sprite DOWN this many pixels so the wheels visually meet the
+  //          floor (the art's last content row is a thin wheel-edge, not a
+  //          flat contact line, so the sprite looks hover-y without a nudge).
+  const PLAYER_SPRITE = { w: 130, h: 96, yOffset: 7 };
+
+  function drawPlayer(p) {
+    const c = p.char;
+    const px = p.x, py = p.y;
+    const w = CFG.playerW, h = CFG.playerH;
+
+    const bob = p.onGround ? Math.sin(p.bob) * 1.5 : 0;
+
+    // Sprite: bottom of sprite rests on the collision box bottom (= groundY when on ground),
+    // plus a small visual nudge so the wheels meet the floor.
+    const spriteBottom = py + h + bob + PLAYER_SPRITE.yOffset;
+    const dx = px + w / 2 - PLAYER_SPRITE.w / 2;
+    const dy = spriteBottom - PLAYER_SPRITE.h;
+
+    const bucket = images.characters_board;
+    const img = bucket && bucket[c.boardImgIdx];
+    if (img) {
+      const src = SRC_BOX.board;
+      ctx.drawImage(img, src.sx, src.sy, src.sw, src.sh, dx, dy, PLAYER_SPRITE.w, PLAYER_SPRITE.h);
+    } else {
+      // Fallback pill while assets load.
+      ctx.fillStyle = "#c864ff";
+      ctx.fillRect(dx + 20, dy + 20, PLAYER_SPRITE.w - 40, PLAYER_SPRITE.h - 30);
+    }
+  }
+
+  // =============================================================
+  // Physics
+  // =============================================================
+  function tryJump(now) {
+    const p = state.player;
+    const withinCoyote = (now - state.lastGroundedAt) <= CFG.coyoteMs;
+    if (p.onGround || (withinCoyote && p.jumpsUsed === 0)) {
+      p.vy = CFG.jumpV;
+      p.onGround = false;
+      p.jumpsUsed = 1;
+      return true;
+    }
+    if (p.jumpsUsed < 2) {
+      p.vy = CFG.doubleJumpV;
+      p.jumpsUsed = 2;
+      return true;
+    }
+    return false;
+  }
+
+  // =============================================================
+  // Loop
+  // =============================================================
+  let lastTs = performance.now();
+  function loop(ts) {
+    const dt = Math.min(50, ts - lastTs);
+    lastTs = ts;
+    update(dt, ts);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt, now) {
+    if (state.mode === "paused") return;   // world frozen
+    if (state.mode !== "playing") {
+      state.worldX += 1.2 * (dt / 16.67);
+      return;
+    }
+
+    state.scrollSpeed = Math.min(
+      CFG.maxScrollSpeed,
+      CFG.scrollSpeed + (now - state.startTime) * CFG.scrollAccel
+    );
+    const step = state.scrollSpeed * (dt / 16.67);
+    state.worldX += step;
+    state.distance = state.worldX / 50;
+
+    const p = state.player;
+    if (input._queuedPress || now <= input.jumpBufferUntil) {
+      if (tryJump(now)) {
+        input._queuedPress = false;
+        input.jumpBufferUntil = 0;
+      } else {
+        input._queuedPress = false;
+      }
+    }
+
+    p.vy += CFG.gravity * (dt / 16.67);
+    if (p.vy > CFG.maxFallSpeed) p.vy = CFG.maxFallSpeed;
+    p.y += p.vy * (dt / 16.67);
+
+    const groundTop = CFG.groundY - CFG.playerH;
+    if (p.y >= groundTop) {
+      p.y = groundTop;
+      p.vy = 0;
+      if (!p.onGround) {
+        p.onGround = true;
+        p.jumpsUsed = 0;
+      }
+      state.lastGroundedAt = now;
+    } else {
+      p.onGround = false;
+    }
+
+    p.boardSpinPhase += (state.scrollSpeed * 0.12) * (dt / 16.67);
+    p.bob += 0.18 * (dt / 16.67);
+
+    if (CFG.obstaclesEnabled && state.worldX >= state.nextObstacleAt) spawnObstacle();
+    state.obstacles = state.obstacles.filter(o => o.x + o.w > state.worldX - 100);
+
+    for (const o of state.obstacles) {
+      const ox = o.x - state.worldX;
+      const oy = CFG.groundY - o.h;
+      const pxL = p.x + 6, pxR = p.x + CFG.playerW - 6;
+      const pyT = p.y + 6, pyB = p.y + CFG.playerH;
+      if (pxR > ox && pxL < ox + o.w && pyB > oy && pyT < oy + o.h) {
+        die(now);
+        break;
+      }
+    }
+  }
+
+  function die(now) {
+    state.mode = "dead";
+    state.deathTime = now;
+    if (state.distance > state.highScore) {
+      state.highScore = state.distance;
+      state.newRecord = true;
+      saveHighScore(state.highScore);
+      renderHighScore(state.highScore);
+    }
+    setTimeout(() => { if (state.mode === "dead") showDeathScreen(); }, 250);
+  }
+
+  function showDeathScreen() {
+    overlay.innerHTML = `
+      <div class="title-wrap">
+        <div class="title-text">WIPE<br>OUT!</div>
+        <span class="sparkle s1">&#10022;</span>
+        <span class="sparkle s2">&#10023;</span>
+        <span class="sparkle s3">&#10024;</span>
+        <span class="sparkle s4">&#10022;</span>
+      </div>
+      <p>
+        You skated <b>${state.distance.toFixed(1)} m</b> before eating it.<br>
+        ${state.newRecord
+          ? `<span style="color:#ffeb61; text-shadow:0 0 6px #ff6ec7;">&#10024; NEW BEST! &#10024;</span>`
+          : `<span style="color:#63e2ff;">Best: ${state.highScore.toFixed(1)} m</span>`}
+      </p>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button id="btnRetry" style="padding:10px 18px; border-radius:10px; border:0; cursor:pointer;
+          background:linear-gradient(180deg,#ff6ec7,#c864ff); color:#fff; font-weight:700;
+          font-family:'Press Start 2P',monospace; font-size:11px; letter-spacing:1px;
+          box-shadow:0 4px 14px rgba(255,110,199,0.6),0 0 0 2px #fff inset;">RETRY</button>
+        <button id="btnMenu"  style="padding:10px 18px; border-radius:10px; border:0; cursor:pointer;
+          background:linear-gradient(180deg,#63e2ff,#6d7bff); color:#fff; font-weight:700;
+          font-family:'Press Start 2P',monospace; font-size:11px; letter-spacing:1px;
+          box-shadow:0 4px 14px rgba(99,226,255,0.6),0 0 0 2px #fff inset;">NEW&nbsp;SKATER</button>
+      </div>
+      <div class="hint">Press <kbd>R</kbd> to retry instantly.</div>
+    `;
+    overlay.classList.remove("hidden");
+    hud.classList.add("hidden");
+    document.getElementById("btnRetry").onclick = () => startGame(state.charId);
+    document.getElementById("btnMenu").onclick = () => buildRosterScreen();
+  }
+
+  // =============================================================
+  // Render
+  // =============================================================
+  function render() {
+    ctx.clearRect(0, 0, CFG.width, CFG.height);
+    drawBackground(state.worldX);
+
+    if (state.mode === "playing" || state.mode === "dead" || state.mode === "paused") {
+      for (const o of state.obstacles) drawObstacle(o, state.worldX);
+      drawPlayer(state.player);
+      hudDistance.textContent = state.distance.toFixed(1);
+      if (state.mode === "paused") drawPauseScreen();
+    } else if (state.mode === "menu") {
+      const demo = {
+        x: CFG.playerX, y: CFG.groundY - CFG.playerH, vy: 0, onGround: true,
+        jumpsUsed: 0, char: CHARACTERS[0], boardSpinPhase: state.worldX * 0.05, bob: performance.now() / 200,
+      };
+      drawPlayer(demo);
+    }
+  }
+
+  // =============================================================
+  // Character roster UI
+  // =============================================================
+  function titleHTML() {
+    return `
+      <div class="title-wrap">
+        <div class="title-text">SAWYER'S<br>SKATEBOARDING<br>SUPERPETS</div>
+        <span class="sparkle s1">&#10022;</span>
+        <span class="sparkle s2">&#10023;</span>
+        <span class="sparkle s3">&#10024;</span>
+        <span class="sparkle s4">&#10022;</span>
+        <span class="sparkle s5">&#10023;</span>
+        <span class="sparkle s6">&#10024;</span>
+      </div>`;
+  }
+
+  function buildRosterScreen() {
+    state.mode = "menu";
+    overlay.innerHTML = `
+      ${titleHTML()}
+      <p>Pick your skater — <kbd>Space</kbd> to jump, tap again in the air for a double jump.</p>
+      <div class="roster" id="roster"></div>
+      <div class="hint">Hold <kbd>Space</kbd> longer for a higher jump.</div>
+    `;
+    overlay.classList.remove("hidden");
+    hud.classList.add("hidden");
+    const ros = overlay.querySelector("#roster");
+
+    for (const c of CHARACTERS) {
+      const card = document.createElement("div");
+      card.className = "pick";
+      const cv = document.createElement("canvas");
+      cv.width = 160; cv.height = 160;
+      card.appendChild(cv);
+      const label = document.createElement("div");
+      label.className = "name";
+      label.textContent = c.name;
+      card.appendChild(label);
+      ros.appendChild(card);
+
+      const pctx = cv.getContext("2d");
+      pctx.imageSmoothingEnabled = true;
+      drawPortrait(pctx, c, cv.width, cv.height);
+
+      card.addEventListener("click", () => startGame(c.id));
+    }
+  }
+
+  // Fit an image's bbox region into a target rect, preserving aspect ratio (contain).
+  //   align: "bottom" (default) sits the art on the bottom of the rect;
+  //          "center" vertically centers — better for short/squat characters
+  //          that otherwise look stranded at the bottom of the card.
+  function drawContain(pctx, img, bbox, dx, dy, dw, dh, align) {
+    const [bx, by, bx2, by2] = bbox;
+    const sw = bx2 - bx, sh = by2 - by;
+    const scale = Math.min(dw / sw, dh / sh);
+    const finalW = sw * scale;
+    const finalH = sh * scale;
+    const finalX = dx + (dw - finalW) / 2;
+    const finalY = (align === "center")
+      ? dy + (dh - finalH) / 2
+      : dy + (dh - finalH);
+    pctx.drawImage(img, bx, by, sw, sh, finalX, finalY, finalW, finalH);
+  }
+
+  function drawPortrait(pctx, c, cardW, cardH) {
+    // Fill card white so any lingering white in the character art blends seamlessly.
+    pctx.fillStyle = "#ffffff";
+    pctx.fillRect(0, 0, cardW, cardH);
+
+    const img = images.characters_sitting && images.characters_sitting[c.imgIdx];
+    if (img) {
+      const pad = 6;
+      drawContain(pctx, img, c.bbox, pad, pad, cardW - pad * 2, cardH - pad * 2, c.portraitAlign);
+    } else {
+      pctx.fillStyle = "#f5e4ff";
+      pctx.fillRect(0, 0, cardW, cardH);
+      pctx.fillStyle = "#7a1aa0";
+      pctx.font = "bold 14px system-ui, sans-serif";
+      pctx.textAlign = "center";
+      pctx.textBaseline = "middle";
+      pctx.fillText(c.name, cardW / 2, cardH / 2);
+    }
+  }
+
+  // =============================================================
+  // Utilities
+  // =============================================================
+  // Cached: reading computed styles every frame is surprisingly slow.
+  const _cssCache = Object.create(null);
+  function getCSS(varName) {
+    let v = _cssCache[varName];
+    if (v === undefined) {
+      v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      _cssCache[varName] = v;
+    }
+    return v;
+  }
+  function shade(hex, pct) {
+    const m = hex.replace("#", "").match(/.{2}/g).map(h => parseInt(h, 16));
+    const f = pct < 0 ? 0 : 255;
+    const t = Math.abs(pct);
+    const n = m.map(c => Math.round(c + (f - c) * t));
+    return "#" + n.map(c => c.toString(16).padStart(2, "0")).join("");
+  }
+
+  // =============================================================
+  // Boot
+  // =============================================================
+  (async () => {
+    requestAnimationFrame((ts) => { lastTs = ts; loop(ts); });
+    await loadAllAssets();
+    buildRosterScreen();
+  })();
+})();
+</script>
+<!-- xgassman back link -->
+<a id="xg-back" href="/" title="More projects at xgassman.com">← xgassman<span style="color:#6f8259">.</span></a>
+<style>
+#xg-back{all:initial;position:fixed!important;left:12px;bottom:12px;z-index:2147483000!important;
+  font:500 12px/1 Arial,Helvetica,sans-serif;letter-spacing:-.2px;color:#eeeeea;cursor:pointer;
+  background:rgba(25,26,24,.78);padding:7px 11px;border-radius:999px;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);opacity:.8;transition:opacity .15s}
+#xg-back:hover,#xg-back:focus-visible{opacity:1}
+#xg-back:focus-visible{outline:2px solid #6f8259;outline-offset:2px}
+@media print{#xg-back{display:none}}
+</style>
+</body>
+</html>

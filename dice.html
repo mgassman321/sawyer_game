@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TM08TEJRJE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TM08TEJRJE');
+</script>
+<link rel="icon" type="image/png" href="favicons/dice.png">
+<link rel="apple-touch-icon" href="favicons/dice-touch.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dice · xgassman</title>
+<meta name="description" content="A dice roller for when you don’t have the right dice on hand, with Classic, Vegas and Disco themes.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="xgassman">
+<meta property="og:title" content="Dice">
+<meta property="og:description" content="A dice roller for when you don’t have the right dice on hand, with Classic, Vegas and Disco themes.">
+<meta property="og:url" content="https://xgassman.com/dice">
+<meta property="og:image" content="https://xgassman.com/og/dice.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Monoton&family=Yellowtail&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── CLASSIC THEME (default) ─────────────────────────────── */
+:root {
+  --bg: #1a1410;
+  --surface: #231c16;
+  --surface2: #2e241c;
+  --border: #5c4a36;
+  --accent: #e8a045;
+  --accent2: #c96f2a;
+  --text: #f0e4d0;
+  --text-dim: #8a7060;
+  --die-bg: #f5ede0;
+  --die-border: #2a1f14;
+  --die-text: #1a1410;
+  --die-label: #a08060;
+  --shadow: rgba(0,0,0,0.6);
+  --locked: #e8253a;
+  --locked-glow: rgba(232,37,58,0.35);
+  --roll-count-color: #e8a045;
+  --btn-text: #f5ede0;
+}
+
+/* ── VEGAS THEME ─────────────────────────────────────────── */
+body.vegas {
+  --bg: #14030a;
+  --surface: #2a0812;
+  --surface2: #14030a;
+  --border: #c9971f;
+  --accent: #ffcf5a;
+  --accent2: #d0102c;
+  --text: #fff3dc;
+  --text-dim: #f2a9c0;
+  --die-bg: #d0122c;
+  --die-border: #ffd77a;
+  --die-text: #ffffff;
+  --die-label: #ffd0d8;
+  --shadow: rgba(0,0,0,0.45);
+  --locked: #3df5ff;
+  --locked-glow: rgba(61,245,255,0.75);
+  --roll-count-color: #ffcf5a;
+  --btn-text: #ffffff;
+}
+
+/* ── DISCO THEME ─────────────────────────────────────────── */
+body.disco {
+  --bg: #0d0015;
+  --surface: #130022;
+  --surface2: #1a002e;
+  --border: #6600cc;
+  --accent: #ff00ff;
+  --accent2: #cc00ff;
+  --text: #ffffff;
+  --text-dim: #cc88ff;
+  --die-bg: #1a002e;
+  --die-border: #ff00ff;
+  --die-text: #ffffff;
+  --die-label: #cc88ff;
+  --shadow: rgba(255,0,255,0.25);
+  --locked: #ff1a1a;
+  --locked-glow: rgba(255,26,26,0.5);
+  --roll-count-color: #00ffff;
+  --btn-text: #0d0015;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  transition: background 0.5s, color 0.3s;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(232,160,69,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(201,111,42,0.05) 0%, transparent 60%);
+  transition: opacity 0.5s;
+}
+body.disco::before { opacity: 0; }
+
+/* Vegas: kitschy casino carpet — starbursts + dots over red velvet glows */
+body.vegas::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M30 8 L33.5 26.5 L52 30 L33.5 33.5 L30 52 L26.5 33.5 L8 30 L26.5 26.5Z' fill='%23ffcf5a' opacity='.10'/%3E%3Cpath d='M90 72 L92 88 L108 90 L92 92 L90 108 L88 92 L72 90 L88 88Z' fill='%23ff4fa3' opacity='.10'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%233df5ff' opacity='.12'/%3E%3Ccircle cx='30' cy='90' r='2' fill='%23ffcf5a' opacity='.14'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 15% 10%, rgba(255,40,120,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(255,180,40,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #3a0614 0%, #14030a 80%);
+}
+
+/* Disco animated background */
+.disco-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+  overflow: hidden;
+}
+body.disco .disco-bg { opacity: 1; }
+
+/* A square larger than the screen's diagonal, so the corners never
+   show through while it rotates — on any aspect ratio. */
+.disco-bg::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin: -75vmax 0 0 -75vmax;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    #ff006660, #ff00ff60, #8800ff60, #0044ff60,
+    #00ccff60, #00ff8860, #aaff0060, #ff880060, #ff006660
+  );
+  animation: discospin 8s linear infinite;
+}
+.disco-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 20%, #0d001599 75%);
+}
+
+@keyframes discospin { to { transform: rotate(360deg); } }
+
+.disco-dots {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+body.disco .disco-dots { opacity: 1; }
+
+body > * { position: relative; z-index: 1; }
+
+/* ── HEADER ─────────────────────────────────────────────── */
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 10vw, 96px);
+  letter-spacing: 6px;
+  color: var(--accent);
+  line-height: 1;
+  text-shadow: 4px 4px 0 var(--accent2), 0 0 40px rgba(232,160,69,0.3);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+
+body.disco h1 {
+  animation: discoTitle 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes discoTitle {
+  0%   { color: #ff00ff; text-shadow: 0 0 10px #ff00ff, 0 0 40px #ff00ff, 4px 4px 0 #8800ff; }
+  33%  { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 40px #00ffff, 4px 4px 0 #0044ff; }
+  66%  { color: #ffff00; text-shadow: 0 0 10px #ffff00, 0 0 40px #ffff00, 4px 4px 0 #ff8800; }
+  100% { color: #ff88ff; text-shadow: 0 0 10px #ff88ff, 0 0 40px #ff88ff, 4px 4px 0 #8800ff; }
+}
+
+.subtitle {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 6px;
+  transition: color 0.4s;
+}
+
+/* ── THEME SWITCHER ──────────────────────────────────────── */
+.theme-switcher {
+  display: flex;
+  margin-bottom: 20px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.4s;
+}
+
+.theme-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 8px 22px;
+  cursor: pointer;
+  border: none;
+  background: var(--surface2);
+  color: var(--text-dim);
+  transition: all 0.3s;
+}
+
+.theme-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+body.disco .theme-btn.active {
+  background: linear-gradient(90deg, #ff00ff, #8800ff);
+  color: #fff;
+}
+
+/* ── CONTROLS ────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+  padding: 24px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+
+.controls::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 16px; right: 16px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transition: background 0.4s;
+}
+
+body.disco .controls::before {
+  background: linear-gradient(90deg, transparent, #ff00ff, #00ffff, #ff00ff, transparent);
+  animation: scanline 3s linear infinite;
+}
+
+@keyframes scanline {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+body.disco .controls {
+  box-shadow: 0 0 24px rgba(102,0,204,0.4), inset 0 0 30px rgba(102,0,204,0.08);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.4s;
+}
+
+select {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  padding: 8px 16px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, background 0.4s, color 0.4s, box-shadow 0.2s;
+  appearance: none;
+  text-align: center;
+  min-width: 80px;
+}
+
+select:hover, select:focus { border-color: var(--accent); }
+body.disco select:hover, body.disco select:focus { box-shadow: 0 0 10px var(--accent); }
+
+/* ── ROLL BUTTON ─────────────────────────────────────────── */
+.roll-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--btn-text);
+  background: var(--accent2);
+  border: 2px solid var(--accent);
+  padding: 10px 40px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, top 0.1s;
+  position: relative;
+  top: 0;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.5), 4px 4px 0 2px #000;
+}
+
+.roll-btn:hover { background: var(--accent); color: var(--bg); }
+
+body.disco .roll-btn {
+  background: linear-gradient(135deg, #ff00ff, #8800ff);
+  border-color: #ff00ff;
+  box-shadow: 4px 4px 0 #000, 0 0 20px #ff00ff66;
+  color: #fff;
+}
+body.disco .roll-btn:hover {
+  background: linear-gradient(135deg, #00ffff, #0088ff);
+  border-color: #00ffff;
+  box-shadow: 4px 4px 0 #000, 0 0 20px #00ffff66;
+}
+
+.btn-row { display: flex; gap: 12px; align-self: flex-end; }
+
+.reset-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  background: transparent;
+  border: 2px solid var(--border);
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.reset-btn:hover { color: var(--text); border-color: var(--accent); }
+body.disco .reset-btn:hover { box-shadow: 0 0 12px var(--accent); }
+
+.roll-btn:active, .roll-btn.rolling {
+  top: 3px;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.5), 1px 1px 0 2px #000;
+}
+
+/* ── STATUS ROW ──────────────────────────────────────────── */
+.status-row {
+  width: 100%;
+  max-width: 780px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 2px;
+}
+
+.hint {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  transition: color 0.4s;
+}
+
+.roll-counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.35s, transform 0.35s, color 0.4s;
+  pointer-events: none;
+}
+
+.roll-counter.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.roll-counter-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.4s;
+}
+
+.roll-counter-pill {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--bg);
+  background: var(--roll-count-color);
+  padding: 3px 12px 1px;
+  transition: background 0.4s, color 0.4s, box-shadow 0.4s;
+}
+
+body.disco .roll-counter-pill {
+  box-shadow: 0 0 14px var(--roll-count-color);
+  animation: pillpulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pillpulse {
+  from { box-shadow: 0 0 8px #00ffff; }
+  to   { box-shadow: 0 0 22px #00ffff, 0 0 40px #00ffff44; }
+}
+
+/* ── DICE AREA ───────────────────────────────────────────── */
+.dice-area {
+  width: 100%;
+  max-width: 780px;
+  min-height: 200px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+  transition: border-color 0.2s, background 0.4s, box-shadow 0.4s;
+}
+
+body.disco .dice-area {
+  box-shadow: 0 0 30px rgba(102,0,204,0.3), inset 0 0 40px rgba(102,0,204,0.06);
+}
+
+.dice-area.shaking {
+  border-color: var(--accent);
+  animation: areashake 0.35s ease;
+}
+
+@keyframes areashake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px) rotate(-0.5deg); }
+  35%       { transform: translateX(5px) rotate(0.5deg); }
+  55%       { transform: translateX(-4px); }
+  75%       { transform: translateX(3px); }
+}
+
+.dice-area-label {
+  position: absolute;
+  top: -11px; left: 20px;
+  background: var(--surface);
+  padding: 0 10px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: background 0.4s, color 0.4s;
+}
+
+.empty-msg {
+  color: var(--text-dim);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.4s;
+}
+
+/* ── DICE ────────────────────────────────────────────────── */
+.die {
+  width: 88px;
+  height: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: dieAppear 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  transition: filter 0.15s;
+}
+
+/* Die outline drawn as an SVG polygon so each die type gets its own shape */
+.die-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(3px 3px 0 var(--shadow)) drop-shadow(0 0 6px var(--die-glow, transparent));
+  transition: filter 0.15s;
+}
+.die-shape .outline {
+  fill: var(--die-fill, var(--die-bg));
+  stroke: var(--die-stroke, var(--die-border));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.3s, stroke 0.15s;
+}
+.die-shape .facet {
+  fill: none;
+  stroke: var(--die-stroke, var(--die-border));
+  stroke-width: 1;
+  opacity: 0.35;
+  vector-effect: non-scaling-stroke;
+}
+.die > *:not(.die-shape) { position: relative; z-index: 1; }
+.die .die-sides, .die .die-lock { position: absolute; }
+
+/* Per-shape text placement so numbers sit inside the outline */
+.shape-d4 .die-value { margin-top: 20px; }
+.shape-d4 .die-sides { top: auto; bottom: 10px; }
+.shape-d4 .die-lock  { bottom: auto; top: 20px; }
+.shape-d8 .die-sides  { top: 16px; }
+.shape-d8 .die-lock   { bottom: 14px; }
+.shape-d10 .die-sides { top: 14px; }
+.shape-d10 .die-value { margin-top: -4px; }
+.shape-d10 .die-lock  { bottom: 18px; }
+.shape-d12 .die-sides { top: 14px; }
+.shape-d12 .die-lock  { bottom: 10px; }
+.shape-d20 .die-sides { top: 12px; }
+.shape-d20 .die-value { margin-top: 6px; }
+.shape-d20 .die-lock  { bottom: 9px; }
+.shape-d100 .die-sides { top: 10px; }
+.shape-d100 .die-lock  { bottom: 8px; }
+
+@keyframes dieAppear {
+  from { transform: scale(0.6) rotate(-10deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.die-sides {
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-family: 'DM Mono', monospace;
+  position: absolute;
+  top: 5px; left: 0; right: 0;
+  text-align: center;
+  color: var(--die-label);
+  transition: color 0.3s;
+}
+
+.die-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--die-text);
+  line-height: 1;
+  transition: color 0.3s;
+}
+.die-value.large  { font-size: 26px; }
+.die-value.xlarge { font-size: 20px; }
+
+/* ── LOCK ────────────────────────────────────────────────── */
+.die-lock {
+  position: absolute;
+  bottom: 4px; left: 0; right: 0;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+
+.die.locked { cursor: pointer; }
+.die.locked .die-shape .outline { stroke: var(--locked); stroke-width: 3; }
+.die.locked .die-shape {
+  filter: drop-shadow(3px 3px 0 var(--shadow)) drop-shadow(0 0 8px var(--locked-glow));
+}
+
+.die.locked .die-lock { opacity: 1; }
+
+.multi-roll-active .die { cursor: pointer; }
+.multi-roll-active .die:not(.locked):hover { filter: brightness(1.12); }
+
+/* ── TOGGLE SWITCH ───────────────────────────────────────── */
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px; height: 24px;
+  cursor: pointer;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-track {
+  background: var(--accent2);
+  border-color: var(--accent);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  background: var(--text-dim);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-switch input:checked ~ .toggle-knob {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+.multi-hint {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 120px;
+  line-height: 1.4;
+  transition: color 0.4s;
+}
+
+/* ── TOTAL BAR ───────────────────────────────────────────── */
+.total-bar {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 780px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 0 4px;
+}
+
+.total-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.4s;
+}
+
+.total-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  min-width: 60px;
+  text-align: right;
+  transition: color 0.4s, text-shadow 0.4s;
+}
+
+body.disco .total-value {
+  text-shadow: 0 0 16px var(--accent);
+}
+/* ══ VEGAS STYLING (classic theme only) ═════════════════════ */
+.vegas-stars {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  transition: opacity 0.6s;
+}
+.vegas-stars { opacity: 0; }
+body.vegas .vegas-stars { opacity: 1; }
+.vegas-stars span {
+  position: absolute;
+  background: #fff4c8;
+  clip-path: polygon(50% 0%, 57% 40%, 100% 50%, 57% 60%, 50% 100%, 43% 60%, 0% 50%, 43% 40%);
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.2) rotate(0deg); opacity: 0.2; }
+  50%      { transform: scale(1) rotate(45deg);  opacity: 0.9; }
+}
+
+/* Marquee sign header with chasing bulbs */
+body.vegas header {
+  padding: 26px 56px 22px;
+  margin-bottom: 30px;
+  background: linear-gradient(180deg, #3d0b18, #1c0408);
+  border: 3px solid #c9971f;
+  border-radius: 20px;
+  box-shadow: 0 0 0 5px #4a0c1a, 0 0 0 7px #c9971f88,
+              0 0 50px rgba(255,60,140,0.35), inset 0 0 30px rgba(0,0,0,0.6);
+}
+.bulb {
+  position: absolute;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #6b4a14;
+  pointer-events: none;
+  animation: chase 0.9s steps(1) infinite;
+}
+.bulb.p1 { animation-delay: -0.3s; }
+.bulb.p2 { animation-delay: -0.6s; }
+@keyframes chase {
+  0%     { background: #fff6cf; box-shadow: 0 0 6px #ffd56b, 0 0 14px #ffb02e; }
+  33.33% { background: #6b4a14; box-shadow: none; }
+}
+.bulb { display: none; }
+body.vegas .bulb { display: block; }
+
+/* Neon tube title */
+body.vegas h1 {
+  font-family: 'Monoton', 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: clamp(56px, 11vw, 104px);
+  letter-spacing: 8px;
+  color: #ffe9f3;
+  text-shadow: 0 0 3px #fff, 0 0 10px #ff4fa3, 0 0 22px #ff4fa3,
+               0 0 42px #ff1f7a, 0 0 80px #ff1f7a;
+  animation: neonFlicker 7s infinite;
+}
+@keyframes neonFlicker {
+  0%, 88%, 91%, 94%, 100% { opacity: 1; }
+  89%, 92.5%              { opacity: 0.35; text-shadow: none; }
+}
+body.vegas .subtitle {
+  font-family: 'Yellowtail', cursive;
+  font-size: 32px;
+  letter-spacing: 1px;
+  text-transform: none;
+  color: #d8fdff;
+  text-shadow: 0 0 6px #3df5ff, 0 0 16px #00c8ff, 0 0 30px #00a0ff;
+  transform: rotate(-4deg);
+  margin-top: 2px;
+}
+
+/* Theme switcher pill */
+body.vegas .theme-switcher { border-color: #c9971f; border-radius: 999px; }
+body.vegas .theme-btn { background: #1c0408; color: #f2a9c0; }
+body.vegas .theme-btn.active {
+  background: linear-gradient(180deg, #ff3d55, #b0001e);
+  color: #fff;
+  text-shadow: 0 0 6px #ffb0c0;
+}
+
+/* Velvet control panel */
+body.vegas .controls {
+  background: radial-gradient(ellipse at top, #4d0e1e, #22050c 75%);
+  border: 2px solid #c9971f;
+  border-radius: 16px;
+  box-shadow: 0 0 0 4px #1a0408, 0 0 0 6px #c9971f55, 0 12px 30px rgba(0,0,0,0.6);
+}
+body.vegas .controls::before { background: linear-gradient(90deg, transparent, #ffcf5a, transparent); }
+body.vegas label { color: #ffcf5a; }
+body.vegas select {
+  border-radius: 10px;
+  color: #ffcf5a;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.7);
+}
+body.vegas select:hover, body.vegas select:focus { box-shadow: 0 0 10px #ffcf5a88; }
+body.vegas .multi-hint { color: #f2a9c0; }
+body.vegas .toggle-track, body.vegas .toggle-knob { border-radius: 999px; }
+
+/* Big shiny casino button */
+body.vegas .roll-btn {
+  font-size: 30px;
+  color: #fff;
+  background: radial-gradient(circle at 50% 28%, #ff6a7c, #d0102c 55%, #8a0018);
+  border: 3px solid #ffcf5a;
+  border-radius: 999px;
+  text-shadow: 0 2px 0 #6a0012;
+  box-shadow: 0 6px 0 #6a0012, 0 0 0 5px #3a0a10, 0 0 24px rgba(255,60,90,0.55);
+  animation: btnGlow 1.4s ease-in-out infinite alternate;
+}
+body.vegas .roll-btn:hover {
+  background: radial-gradient(circle at 50% 28%, #ff8a98, #e8203c 55%, #9a0020);
+  color: #fff;
+}
+body.vegas .roll-btn:active, body.vegas .roll-btn.rolling {
+  top: 4px;
+  box-shadow: 0 2px 0 #6a0012, 0 0 0 5px #3a0a10, 0 0 30px rgba(255,60,90,0.8);
+}
+@keyframes btnGlow {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.15) drop-shadow(0 0 10px rgba(255,207,90,0.6)); }
+}
+body.vegas .reset-btn {
+  border-radius: 999px;
+  border-color: #c9971f;
+  color: #ffcf5a;
+  background: #1c0408;
+}
+body.vegas .reset-btn:hover { color: #fff; border-color: #ffcf5a; box-shadow: 0 0 12px #ffcf5a88; }
+
+/* Status row */
+body.vegas .hint, body.vegas .roll-counter-label { color: #f2a9c0; }
+body.vegas .roll-counter-pill {   /* casino chip */
+  background: #d0102c;
+  color: #fff;
+  border: 2px dashed #fff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px #d0102c, 0 0 12px rgba(255,60,90,0.6);
+  padding: 3px 14px 1px;
+}
+
+/* Green felt craps table with a gold rail */
+body.vegas .dice-area {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at center, #14904f 0%, #0b6b3a 55%, #064425 100%);
+  border: 3px solid #ffcf5a;
+  border-radius: 24px;
+  box-shadow: 0 0 0 9px #4a1a08, 0 0 0 11px #c9971f,
+              inset 0 0 50px rgba(0,0,0,0.55), 0 16px 40px rgba(0,0,0,0.6);
+  margin-top: 14px;
+}
+body.vegas .dice-area::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed rgba(255,207,90,0.28);
+  border-radius: 16px;
+  pointer-events: none;
+}
+body.vegas .dice-area.shaking { border-color: #fff3b0; }
+body.vegas .dice-area-label {
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #ffe08a, #c9971f);
+  color: #3a0a10;
+  font-weight: 500;
+  padding: 3px 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+body.vegas .empty-msg { color: rgba(255,243,220,0.7); }
+
+/* Glowing scoreboard total */
+body.vegas .total-bar { margin-top: 28px; }
+body.vegas .total-label { color: #ffcf5a; }
+body.vegas .total-value {
+  font-size: 44px;
+  color: #ffcf5a;
+  text-shadow: 0 0 6px #ffcf5a, 0 0 18px #ff9a1f, 0 0 34px #ff6a00;
+}
+</style>
+</head>
+<body>
+
+<div class="disco-bg"></div>
+<div class="disco-dots"></div>
+<div class="vegas-stars" id="vegasStars"></div>
+
+<header>
+  <h1>DICE</h1>
+</header>
+
+<div class="theme-switcher">
+  <button class="theme-btn active" data-theme="classic">Classic</button>
+  <button class="theme-btn" data-theme="vegas">Vegas</button>
+  <button class="theme-btn" data-theme="disco">Disco</button>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Number of Dice</label>
+    <select id="numDice">
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option>
+      <option>7</option><option>8</option><option>9</option>
+      <option>10</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Sides per Die</label>
+    <select id="numSides">
+      <option value="4">D4</option>
+      <option value="6" selected>D6</option>
+      <option value="8">D8</option>
+      <option value="10">D10</option>
+      <option value="12">D12</option>
+      <option value="20">D20</option>
+      <option value="100">D100</option>
+    </select>
+  </div>
+  <div class="toggle-group">
+    <label>Multi-Roll</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="multiToggle">
+      <div class="toggle-track"></div>
+      <div class="toggle-knob"></div>
+    </label>
+    <span class="multi-hint">Click a die to lock it</span>
+  </div>
+  <div class="control-group">
+    <label>&nbsp;</label>
+    <div class="btn-row">
+      <button class="reset-btn" id="resetBtn">Reset</button>
+      <button class="roll-btn" id="rollBtn">Roll!</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-row">
+  <span class="hint">Press spacebar to roll</span>
+  <div class="roll-counter" id="rollCounter">
+    <span class="roll-counter-label">Roll</span>
+    <span class="roll-counter-pill" id="rollCountBadge">1</span>
+  </div>
+</div>
+
+<div class="dice-area" id="diceArea">
+  <span class="dice-area-label">Results</span>
+  <span class="empty-msg" id="emptyMsg">Click Roll! to begin</span>
+</div>
+
+<div class="total-bar" id="totalBar" style="display:none">
+  <span class="total-label">Total</span>
+  <span class="total-value" id="totalValue">—</span>
+</div>
+
+<script>
+  const diceArea       = document.getElementById('diceArea');
+  const rollBtn        = document.getElementById('rollBtn');
+  const emptyMsg       = document.getElementById('emptyMsg');
+  const totalBar       = document.getElementById('totalBar');
+  const totalValue     = document.getElementById('totalValue');
+  const multiToggle    = document.getElementById('multiToggle');
+  const rollCounter    = document.getElementById('rollCounter');
+  const rollCountBadge = document.getElementById('rollCountBadge');
+  const themeBtns      = document.querySelectorAll('.theme-btn');
+
+  let lockedValues    = [];
+  let lastN           = 0;
+  let rollCount       = 0;
+  let multiRollActive = false;
+
+  // Vivid disco die color palettes
+  const discoColors = [
+    { bg: '#2a0055', text: '#ff88ff', border: '#dd00ff', glow: '#cc00ff55' },
+    { bg: '#002255', text: '#66ddff', border: '#0099ff', glow: '#0088ff55' },
+    { bg: '#003322', text: '#44ffaa', border: '#00cc66', glow: '#00cc6655' },
+    { bg: '#550022', text: '#ff7799', border: '#ff0055', glow: '#ff005555' },
+    { bg: '#444400', text: '#ffff44', border: '#ddcc00', glow: '#ddcc0055' },
+    { bg: '#003344', text: '#00ffee', border: '#00bbcc', glow: '#00bbcc55' },
+    { bg: '#330044', text: '#ee55ff', border: '#bb00ee', glow: '#bb00ee55' },
+    { bg: '#001144', text: '#88aaff', border: '#4466ff', glow: '#4466ff55' },
+    { bg: '#442200', text: '#ffbb44', border: '#ff8800', glow: '#ff880055' },
+    { bg: '#220033', text: '#cc88ff', border: '#9900ff', glow: '#9900ff55' },
+  ];
+
+  // ── THEME ────────────────────────────────────────
+  function setTheme(name) {
+    document.body.classList.remove('vegas', 'disco');
+    if (name !== 'classic') document.body.classList.add(name);
+    themeBtns.forEach(b => b.classList.toggle('active', b.dataset.theme === name));
+    refreshDiceColors();   // add/remove disco colors on dice already showing
+  }
+  themeBtns.forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme)));
+
+  function refreshDiceColors() {
+    const isDisco = document.body.classList.contains('disco');
+    const dice = diceArea.querySelectorAll('.die');
+    const shuffled = [...discoColors].sort(() => Math.random() - 0.5);
+    // Same number → same color: give each distinct value its own palette entry
+    const colorFor = new Map();
+    dice.forEach(die => {
+      const v = die.querySelector('.die-value').textContent;
+      if (!colorFor.has(v)) colorFor.set(v, shuffled[colorFor.size % shuffled.length]);
+    });
+    dice.forEach(die => {
+      if (isDisco) {
+        const c = colorFor.get(die.querySelector('.die-value').textContent);
+        die.style.setProperty('--die-fill', c.bg);
+        die.style.setProperty('--die-stroke', c.border);
+        die.style.setProperty('--die-glow', c.glow);
+        const valEl = die.querySelector('.die-value');
+        if (valEl) valEl.style.color = c.text;
+      } else {
+        ['--die-fill', '--die-stroke', '--die-glow'].forEach(p => die.style.removeProperty(p));
+        const valEl = die.querySelector('.die-value');
+        if (valEl) valEl.style.color = '';
+      }
+    });
+  }
+
+  // ── MULTI-ROLL TOGGLE ────────────────────────────
+  multiToggle.addEventListener('change', () => {
+    multiRollActive = multiToggle.checked;
+    if (multiRollActive) {
+      diceArea.classList.add('multi-roll-active');
+    } else {
+      diceArea.classList.remove('multi-roll-active');
+      lockedValues = [];
+      diceArea.querySelectorAll('.die').forEach(d => d.classList.remove('locked'));
+      rollCount = 0;
+      rollCounter.classList.remove('visible');
+    }
+  });
+
+  // ── LOCK ─────────────────────────────────────────
+  function toggleLock(index, die) {
+    if (!multiRollActive) return;
+    if (lockedValues[index] !== null && lockedValues[index] !== undefined) {
+      lockedValues[index] = null;
+      die.classList.remove('locked');
+    } else {
+      lockedValues[index] = parseInt(die.querySelector('.die-value').textContent);
+      die.classList.add('locked');
+    }
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const dice = diceArea.querySelectorAll('.die');
+    if (dice.length > 1) {
+      let t = 0;
+      dice.forEach(d => t += parseInt(d.querySelector('.die-value').textContent));
+      totalValue.textContent = t;
+      totalBar.style.display = 'flex';
+    } else {
+      totalBar.style.display = 'none';
+    }
+  }
+
+  function lockSVG() {
+    return `<svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="6" width="11" height="8" rx="1" style="fill:var(--locked)" stroke="#00000066" stroke-width="1"/>
+      <path d="M3.5 6V4.5a3 3 0 0 1 6 0V6" style="stroke:var(--locked)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <circle cx="6.5" cy="10" r="1.2" fill="#fff" opacity="0.9"/>
+    </svg>`;
+  }
+
+  // ── DIE SHAPES ───────────────────────────────────
+  // Outline points in a 100×100 box (plus optional faint facet lines)
+  const dieShapes = {
+    4:   { outline: '50,6 95,90 5,90' },                                   // triangle
+    6:   { outline: '5,5 95,5 95,95 5,95' },                               // square
+    8:   { outline: '50,3 97,50 50,97 3,50', facet: '3,50 97,50' },         // diamond
+    10:  { outline: '50,3 95,42 50,97 5,42', facet: '5,42 50,58 95,42' },   // kite
+    12:  { outline: '50,4 96,38 78,94 22,94 4,38' },                       // pentagon
+    20:  { outline: '50,3 93,27 93,73 50,97 7,73 7,27', facet: '50,24 80,74 20,74 50,24' }, // hexagon + triangle face
+    100: { outline: '50,3 78,12 95,35 95,65 78,88 50,97 22,88 5,65 5,35 22,12' }, // decagon
+  };
+
+  function shapeSVG(sides) {
+    const s = dieShapes[sides] || dieShapes[6];
+    return `<svg class="die-shape" viewBox="0 0 100 100" aria-hidden="true">
+      <polygon class="outline" points="${s.outline}"/>
+      ${s.facet ? `<polyline class="facet" points="${s.facet}"/>` : ''}
+    </svg>`;
+  }
+
+  // ── VEGAS DECOR ──────────────────────────────────
+  // Chasing marquee bulbs around the header sign
+  function buildBulbs() {
+    const h = document.querySelector('header');
+    h.querySelectorAll('.bulb').forEach(b => b.remove());
+    const inset = 10, w = h.offsetWidth - inset * 2, ht = h.offsetHeight - inset * 2;
+    const perim = 2 * (w + ht);
+    const n = Math.max(12, Math.round(perim / 22));
+    for (let i = 0; i < n; i++) {
+      let d = (i / n) * perim, x, y;
+      if (d < w)            { x = d;            y = 0; }
+      else if ((d -= w) < ht) { x = w;          y = d; }
+      else if ((d -= ht) < w) { x = w - d;      y = ht; }
+      else                  { d -= w; x = 0;    y = ht - d; }
+      const b = document.createElement('span');
+      b.className = 'bulb p' + (i % 3);
+      b.style.left = (x + inset) + 'px';
+      b.style.top  = (y + inset) + 'px';
+      h.appendChild(b);
+    }
+  }
+  // Re-place bulbs whenever the sign changes size (window resize, theme
+  // switch, or the neon font finishing loading)
+  let lastHeaderSize = '';
+  new ResizeObserver(() => {
+    const h = document.querySelector('header');
+    const size = h.offsetWidth + 'x' + h.offsetHeight;
+    if (size !== lastHeaderSize) { lastHeaderSize = size; buildBulbs(); }
+  }).observe(document.querySelector('header'));
+
+  // Twinkling starbursts in the background
+  (function buildStars() {
+    const box = document.getElementById('vegasStars');
+    for (let i = 0; i < 16; i++) {
+      const s = document.createElement('span');
+      const size = 10 + Math.random() * 18;
+      s.style.width = s.style.height = size + 'px';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top  = Math.random() * 100 + '%';
+      s.style.animationDelay = (-Math.random() * 2.6) + 's';
+      s.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+      box.appendChild(s);
+    }
+  })();
+
+  // ── RESET ────────────────────────────────────────
+  function reset() {
+    diceArea.querySelectorAll('.die').forEach(d => d.remove());
+    emptyMsg.style.display = '';
+    totalBar.style.display = 'none';
+    totalValue.textContent = '—';
+    lockedValues = [];
+    lastN = 0;
+    rollCount = 0;
+    rollCounter.classList.remove('visible');
+  }
+  document.getElementById('resetBtn').addEventListener('click', reset);
+
+  // ── ROLL ─────────────────────────────────────────
+  function roll() {
+    const n     = parseInt(document.getElementById('numDice').value);
+    const sides = parseInt(document.getElementById('numSides').value);
+    const isDisco = document.body.classList.contains('disco');
+
+    // Sync lock array length
+    if (n !== lastN) {
+      lockedValues = new Array(n).fill(null);
+      lastN = n;
+    }
+    while (lockedValues.length < n) lockedValues.push(null);
+
+    // Roll counter
+    if (multiRollActive) {
+      rollCount++;
+      rollCountBadge.textContent = rollCount;
+      rollCounter.classList.add('visible');
+      // Bump animation
+      rollCountBadge.style.transform = 'scale(1.4)';
+      setTimeout(() => { rollCountBadge.style.transition = 'transform 0.2s'; rollCountBadge.style.transform = 'scale(1)'; }, 10);
+    } else {
+      rollCount = 0;
+      rollCounter.classList.remove('visible');
+    }
+
+    // Button press
+    rollBtn.classList.add('rolling');
+    setTimeout(() => rollBtn.classList.remove('rolling'), 200);
+
+    // Shake
+    diceArea.classList.remove('shaking');
+    void diceArea.offsetWidth;
+    diceArea.classList.add('shaking');
+    setTimeout(() => diceArea.classList.remove('shaking'), 400);
+
+    emptyMsg.style.display = 'none';
+    diceArea.querySelectorAll('.die').forEach(d => d.remove());
+
+    const results = [];
+
+    for (let i = 0; i < n; i++) {
+      const isLocked = lockedValues[i] !== null && lockedValues[i] !== undefined;
+      const val = isLocked ? lockedValues[i] : Math.ceil(Math.random() * sides);
+      results.push(val);
+
+      const die = document.createElement('div');
+      die.className = `die shape-d${sides}` + (isLocked ? ' locked' : '');
+      die.innerHTML = shapeSVG(sides);
+      if (!isLocked) die.style.animationDelay = `${i * 40}ms`;
+
+      const sideLabel = document.createElement('div');
+      sideLabel.className = 'die-sides';
+      sideLabel.textContent = `d${sides}`;
+
+      const valEl = document.createElement('div');
+      const len = String(val).length;
+      valEl.className = 'die-value' + (len >= 3 ? ' xlarge' : len === 2 && sides >= 20 ? ' large' : '');
+      valEl.textContent = val;
+
+      const lockEl = document.createElement('div');
+      lockEl.className = 'die-lock';
+      lockEl.innerHTML = lockSVG();
+
+      die.appendChild(sideLabel);
+      die.appendChild(valEl);
+      die.appendChild(lockEl);
+
+      const idx = i;
+      die.addEventListener('click', () => toggleLock(idx, die));
+      diceArea.appendChild(die);
+    }
+
+    // Disco colors (matching numbers share a color)
+    if (isDisco) refreshDiceColors();
+
+    if (n > 1) {
+      totalValue.textContent = results.reduce((a, b) => a + b, 0);
+      totalBar.style.display = 'flex';
+    } else {
+      totalBar.style.display = 'none';
+    }
+  }
+
+  rollBtn.addEventListener('click', roll);
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target === document.body) {
+      e.preventDefault();
+      roll();
+    }
+  });
+</script>
+<!-- xgassman back link -->
+<a id="xg-back" href="/" title="More projects at xgassman.com">← xgassman<span style="color:#6f8259">.</span></a>
+<style>
+#xg-back{all:initial;position:fixed!important;left:12px;bottom:12px;z-index:2147483000!important;
+  font:500 12px/1 Arial,Helvetica,sans-serif;letter-spacing:-.2px;color:#eeeeea;cursor:pointer;
+  background:rgba(25,26,24,.78);padding:7px 11px;border-radius:999px;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);opacity:.8;transition:opacity .15s}
+#xg-back:hover,#xg-back:focus-visible{opacity:1}
+#xg-back:focus-visible{outline:2px solid #6f8259;outline-offset:2px}
+@media print{#xg-back{display:none}}
+</style>
+</body>
+</html>
