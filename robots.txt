@@ -1,0 +1,5 @@
+# xgassman.com: all pages may be crawled
+User-agent: *
+Allow: /
+
+Sitemap: https://xgassman.com/sitemap.xml

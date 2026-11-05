@@ -55,6 +55,24 @@ body { background:#000; overflow:hidden; font-family:var(--mono); color:var(--te
 .src-btn:hover { border-color:var(--accent); color:var(--accent); }
 .src-btn.active { border-color:#60ff90; color:#60ff90; background:rgba(96,255,144,0.07); }
 
+#start-hint {
+  font-size:10px; letter-spacing:0.12em; text-transform:uppercase; white-space:nowrap;
+  color:#c8f070; display:inline-flex; align-items:center; gap:6px;
+  pointer-events:none; text-shadow:0 0 8px rgba(200,240,112,0.4);
+}
+#start-hint .hint-txt {
+  text-decoration:underline; text-decoration-style:dotted;
+  text-underline-offset:4px; text-decoration-thickness:1px;
+}
+#start-hint .hint-arrow {
+  font-size:20px; line-height:1; display:inline-block;
+  animation:hintNudge 1.2s ease-in-out infinite;
+}
+#start-hint.gone { display:none; }
+@keyframes hintNudge {
+  0%,100% { transform:translateX(0); }
+  50%     { transform:translateX(5px); }
+}
 #status-area { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:10px; letter-spacing:0.1em; color:var(--text-dim); }
 #dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.15); transition:all 0.3s; }
 #dot.on { background:#60ff90; box-shadow:0 0 7px #60ff90; animation:pulse 1.8s infinite; }
@@ -119,6 +137,7 @@ input[type=color]::-webkit-color-swatch { border:none; border-radius:2px; }
 <div id="topbar">
   <span class="logo">SPECTRUM STUDIO</span>
   <div class="divx"></div>
+  <span id="start-hint"><span class="hint-txt">start here</span><span class="hint-arrow">➜</span></span>
   <button class="src-btn" id="btn-mic">🎤 Microphone</button>
   <button class="src-btn" id="btn-tab">🖥 Tab Audio</button>
   <button class="src-btn" id="btn-demo">🎭 Demo</button>
@@ -242,6 +261,8 @@ let fftSz = 2048;
 function setSt(txt, cls) {
   document.getElementById('stxt').textContent = txt;
   document.getElementById('dot').className = cls;
+  // Show the "start here" hint whenever no source is live
+  document.getElementById('start-hint').classList.toggle('gone', cls === 'on');
 }
 
 function deactivateAllBtns() {
