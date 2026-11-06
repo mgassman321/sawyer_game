@@ -186,8 +186,8 @@
     <div class="range-labels"><span>1</span><span>50</span></div>
   </div>
   <div class="ctrl-group">
-    <label class="expo-toggle" for="expo-toggle"><span class="expo-name">🌭 Exponential Hot Dog Droppage</span><input type="checkbox" id="expo-toggle"><span class="sw"></span></label>
-    <div id="expo-status">Off</div>
+    <label class="expo-toggle" for="expo-toggle"><span class="expo-name">🌭 Exponential Hot Dog Droppage</span><input type="checkbox" id="expo-toggle" checked><span class="sw"></span></label>
+    <div id="expo-status" class="on">Doubling every 3 sec (max 128/sec)</div>
   </div>
   <div class="ctrl-group">
     <label>Drop Speed</label>
@@ -302,7 +302,7 @@ let furbyEnd=0, mallortTextAcc=0, furbyTextAcc=0;
 let speedMult=1.0, genPerSec=1, lastGenTime=0;
 // Exponential Hot Dog Droppage: generation rate doubles every 3 sec up to a cap
 const EXPO_DOUBLE_MS=3000, EXPO_MAX_RATE=128, MAX_ON_SCREEN=700;
-let expoOn=false, expoRate=1, expoLastDouble=0;
+let expoOn=true, expoRate=1, expoLastDouble=0;
 let polishBannerAnimId=null;
 
 const DOG_W=50, DOG_H=20;
