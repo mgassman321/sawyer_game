@@ -29,6 +29,11 @@ My own take on Stickies, because I live in a world of Chrome tabs. Notes, photos
 
 A Chicago street-food drop game. Inspired by the 1995 freeware Mac game [Slick Willie 2.0](https://www.macintoshrepository.org/6705-slick-willie-2-0) by Jim Byer.
 
+### Downhill
+`downhill.html`
+
+A pixel-art downhill skiing game with Free Ski, Slalom and Freestyle runs. Jump, pull tricks in the air, rack up style points, and watch out after 1500 m...
+
 Everything is plain HTML, CSS and JavaScript: no build step, no dependencies.
 
 ## Folder layout
