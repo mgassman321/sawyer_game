@@ -32,7 +32,7 @@ A Chicago street-food drop game. Inspired by the 1995 freeware Mac game [Slick W
 ### Downhill
 `downhill.html`
 
-A pixel-art downhill skiing game with Free Ski, Slalom and Freestyle runs. Jump, pull tricks in the air, rack up style points, and watch out after 1500 m...
+A pixel-art downhill skiing game inspired by [SkiFree](https://en.wikipedia.org/wiki/SkiFree), the 1991 Windows classic made by Chris Pirih. Pick Free Ski, Slalom or Freestyle, jump, pull tricks in the air, rack up style points, and watch out after 1500 m...
 
 Everything is plain HTML, CSS and JavaScript: no build step, no dependencies.
 
